@@ -1,0 +1,10 @@
+﻿@using System.Collections
+@using Kendo.Mvc.UI
+
+@(Html.Kendo().DropDownList()
+.BindTo((IEnumerable)ViewBag.ProductCategories)
+.OptionLabel("- Select Product Category - ")
+.DataValueField("ProductCategoryId")
+.DataTextField("ProductCategoryName")
+.Name("ProductCategory.ProductCategoryId")
+)
