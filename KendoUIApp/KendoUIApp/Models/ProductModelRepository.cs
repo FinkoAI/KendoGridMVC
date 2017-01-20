@@ -7,6 +7,7 @@ namespace KendoUIApp.Models
 {
     public class ProductModelRepository
     {
+        const int identityIncrementValue = 1;
         public IEnumerable<ProductModel> Products
         {
             get
@@ -92,6 +93,22 @@ namespace KendoUIApp.Models
                         new ProductModelRepository().ProductCategories.ToList()
                             .Find(x => x.ProductCategoryId.Equals(product.ProductCategory.ProductCategoryId));
             }
+        }
+
+
+        public void Destroy(ProductModel product) {
+            var prod = Products.ToList().Find(x => x.ProductId.Equals(product.ProductId));
+            if (prod != null)
+            {
+                Products.ToList().Remove(prod);
+            }
+        }
+
+        public void Create(ProductModel product)
+        {
+           
+            product.ProductId = (Products.ToList().Count() + identityIncrementValue);
+            Products.ToList().Add(product);
         }
     }
 }

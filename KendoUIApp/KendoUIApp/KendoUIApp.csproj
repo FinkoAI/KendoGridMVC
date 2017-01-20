@@ -3005,6 +3005,8 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\CategoryList.cshtml" />
+    <Content Include="Views\Home\PopupDataForm.cshtml" />
+    <Content Include="Views\Home\PopUpDemo.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

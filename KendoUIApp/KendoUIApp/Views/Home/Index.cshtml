@@ -3,7 +3,7 @@
     ViewBag.Title = "Kendo Grid";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
-<h2>Kendo Grid</h2>
+<h2>Kendo Grid <a href="@Url.Action("PopUpDemo","Home")">Phase 2</a></h2>
 @(Html.Kendo().Grid<KendoUIApp.Models.ProductModel>()
             .Name("grid")
             .Columns(columns =>
