@@ -16,16 +16,38 @@
                 columns.Bound(product => product.UnitsInStock);
                 columns.Bound(product => product.UnitPrice);
                 columns.Command(command =>
-                {                  
+                {
                     command.Destroy();
                 }).Width(250);
+            })
+            .ToolBar(toolbar =>
+            {                
+                toolbar.Template(@<text>
+                   @item.SaveButton()
 
-            })                        
+                   @(Html.Kendo().Button()
+                    .Name("batchProdCatEditor")
+                    .HtmlAttributes(new { type = "k-button" })
+                    .Icon("settings")
+                    .Content("Product Category Batch Update")
+                    .Events(x => x.Click("openWindow")))
+
+                    @(Html.Kendo().Button()
+                    .Name("batchEditor")
+                    .HtmlAttributes(new { type = "k-button" })
+                    .Icon("settings")
+                    .Content("Batch Editor")
+                    .Events(x => x.Click("batchEditor")))
+                </text>);
+                
+            })
+            .Editable(editable => editable.Mode(GridEditMode.InCell))
             .Scrollable()
             .HtmlAttributes(new { style = "height:500px;" })
             .DataSource(dataSource => dataSource
          .Ajax()
          .ServerOperation(false)
+         .Batch(true)         
          .Events(events => events.Error("error_handler"))
          .Model(model =>
          {
@@ -34,6 +56,7 @@
              model.Field(product => product.ProductCategory).DefaultValue(ViewBag.defaultCategory as KendoUIApp.Models.ProductCategoryModel);
          })
          .Read(read => read.Action("Products_Read", "Home"))
+         .Update(update => update.Action("Products_Update", "Home"))
          .Destroy(update => update.Action("Products_Destroy", "Home"))
     )
 )
@@ -48,10 +71,10 @@
 .Modal(true)
 .Visible(false)
 .Events(events => events
-         .Close("resetProductGrid")       
-       )
+         .Close("resetProductGrid")
 )
-<button onclick="openWindow()" class="k-primary">Product Category Batch Update</button>
+)
+
 
 
 
@@ -104,6 +127,40 @@
         });
         wdw.center();
         wdw.open();  //and call its open method
+    }
+
+    function batchEditor() {
+        var grid = $("#grid").data().kendoGrid;
+        var columns = grid.options.columns;
+        var indexColumn = -1;
+        var proprtyField = '';
+        if (columns.length > 0) {
+            for (var i = 0; i < columns.length; i++) {
+                if (columns[i].encoded && columns[i].title != 'Product Category') {
+                    var isConfirm=confirm('Do you want to edit ' + columns[i].title);
+                    if (isConfirm) {
+                        indexColumn = i;
+                        proprtyField = columns[i].field;
+                        break;
+                    }
+                }
+            }
+            if (indexColumn > 0) {
+                var data = grid._data;
+                var record = prompt("Please enter " + columns[i].title + " Value", "Editor");
+                if (record != null) {                    
+                    for (var i in checkedIds) {
+                        if (checkedIds[i]) {
+                            var dt = data[i-1];                           
+                            dt[proprtyField] = record;
+                            dt.dirty = true;
+                            grid._modelChange({model: dt });
+                        }
+                    }
+                }
+                checkedIds = [];
+            }
+        }
     }
 
     function resetProductGrid() {        
