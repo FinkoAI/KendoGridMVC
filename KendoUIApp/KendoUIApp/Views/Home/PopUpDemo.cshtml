@@ -1,4 +1,5 @@
-﻿@using Kendo.Mvc.UI
+﻿@using System.Collections
+@using Kendo.Mvc.UI
 @{
     ViewBag.Title = "PopUp Demo";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -76,6 +77,50 @@
 )
 
 
+<div id="externalEditor" data-role="window" style="display:none" data-visible="true">
+    <table style="width:100%" border="0">
+        <tr>
+            <td>
+                <label for="ProductCategory">Product Category</label>
+            </td>
+            <td>                
+                @(Html.Kendo().DropDownList()
+                    .BindTo((IEnumerable)ViewBag.ProductCategories)
+                    .OptionLabel("- Select Product Category - ")
+                    .DataValueField("ProductCategoryId")
+                    .DataTextField("ProductCategoryName")
+                    .Name("ProductCategory")
+                )
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <label for="ProductName">Product Name</label>
+            </td>
+            <td><input type="text" class="k-input k-textbox" name="ProductName" data-bind="value:ProductName"></td>
+
+        </tr>
+        <tr>
+            <td><label for="UnitsInStock">Unit in Stock</label></td>
+            <td><input type="text" class="k-input k-textbox" name="UnitsInStock" data-bind="value:UnitsInStock"></td>
+        </tr>
+        <tr>
+            <td><label for="UnitPrice">Unit Price</label></td>
+            <td><input type="text" class="k-input k-textbox" name="UnitPrice" data-bind="value:UnitPrice"></td>
+        </tr>
+        <tr>
+            <td>&nbsp;</td>
+            <td style="float:right;">
+                @(Html.Kendo().Button()
+                    .Name("btnApply")
+                    .HtmlAttributes(new { type = "k-button" })
+                    .Icon("settings")
+                    .Content("Apply")
+                    .Events(x => x.Click("changeApply")))
+            </td>
+        </tr>
+    </table>
+</div>
 
 
 <script type="text/javascript">
@@ -130,37 +175,51 @@
     }
 
     function batchEditor() {
+        kendo.bind($('#externalEditor'));
+        var wdw = $('#externalEditor').data('kendoWindow').open();
+        wdw.title("Batch Editor");
+        wdw.setOptions({
+            width: 350,
+            height: 220
+        });
+        wdw.center();
+        wdw.open();  //and call its open method
+    }
+
+    function changeApply() {
         var grid = $("#grid").data().kendoGrid;
         var columns = grid.options.columns;
-        var indexColumn = -1;
-        var proprtyField = '';
-        if (columns.length > 0) {
-            for (var i = 0; i < columns.length; i++) {
-                if (columns[i].encoded && columns[i].title != 'Product Category') {
-                    var isConfirm=confirm('Do you want to edit ' + columns[i].title);
-                    if (isConfirm) {
-                        indexColumn = i;
-                        proprtyField = columns[i].field;
-                        break;
-                    }
-                }
-            }
-            if (indexColumn > 0) {
-                var data = grid._data;
-                var record = prompt("Please enter " + columns[i].title + " Value", "Editor");
-                if (record != null) {                    
-                    for (var i in checkedIds) {
-                        if (checkedIds[i]) {
-                            var dt = data[i-1];                           
+        var data = grid._data;
+        for (var i in checkedIds) {
+            for (var j = 0; j < columns.length; j++) {
+                if (columns[j].encoded) {
+                    var proprtyField = columns[j].field;
+                     
+                    // drop down case
+                    if (columns[j].title === 'Product Category') {
+                        var record = $("#ProductCategory").data("kendoDropDownList").dataItem();
+                        if (checkedIds[i] && record != "") {
+                            var dt = data[i - 1];
+                            dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
+                            dt["ProductCategory"].ProductCategoryName = record.ProductCategoryName;
+                            dt.dirty = true;
+                            grid._modelChange({ model: dt });
+                        }
+                    } else {
+                       // input field case
+                        var obj = $("input[name=" + proprtyField + "]");
+                        var record = obj.val();
+                        if (checkedIds[i] && record != "") {
+                            var dt = data[i - 1];
                             dt[proprtyField] = record;
                             dt.dirty = true;
-                            grid._modelChange({model: dt });
+                            grid._modelChange({ model: dt });
                         }
                     }
                 }
-                checkedIds = [];
             }
         }
+        checkedIds = [];
     }
 
     function resetProductGrid() {        
