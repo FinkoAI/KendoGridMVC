@@ -1,5 +1,4 @@
-﻿@using System.Collections
-@using Kendo.Mvc.UI
+﻿@using Kendo.Mvc.UI
 @{
     ViewBag.Title = "PopUp Demo";
     Layout = "~/Views/Shared/_Layout.cshtml";
@@ -83,14 +82,9 @@
             <td>
                 <label for="ProductCategory">Product Category</label>
             </td>
-            <td>                
-                @(Html.Kendo().DropDownList()
-                    .BindTo((IEnumerable)ViewBag.ProductCategories)
-                    .OptionLabel("- Select Product Category - ")
-                    .DataValueField("ProductCategoryId")
-                    .DataTextField("ProductCategoryName")
-                    .Name("ProductCategory")
-                )
+            <td>  
+                <div id="editor1">                   
+                </div>                
             </td>
         </tr>
         <tr>
@@ -114,7 +108,7 @@
                 @(Html.Kendo().Button()
                     .Name("btnApply")
                     .HtmlAttributes(new { type = "k-button" })
-                    .Icon("settings")
+                    .Icon("validation-data")
                     .Content("Apply")
                     .Events(x => x.Click("changeApply")))
             </td>
@@ -176,6 +170,10 @@
 
     function batchEditor() {
         kendo.bind($('#externalEditor'));
+        var grid = $("#grid").data().kendoGrid;
+        $('#editor1').html(grid.columns[1].editor.replace(/ProductCategory_ProductCategoryId/g, 'ProductCategory_ProductCategoryId2'));
+
+        kendo.bind($('#externalEditor'));
         var wdw = $('#externalEditor').data('kendoWindow').open();
         wdw.title("Batch Editor");
         wdw.setOptions({
@@ -197,8 +195,8 @@
                      
                     // drop down case
                     if (columns[j].title === 'Product Category') {
-                        var record = $("#ProductCategory").data("kendoDropDownList").dataItem();
-                        if (checkedIds[i] && record != "") {
+                        var record = $("#ProductCategory_ProductCategoryId2").data("kendoDropDownList").dataItem();
+                        if (checkedIds[i] && record != "" && record.ProductCategoryId>0) {
                             var dt = data[i - 1];
                             dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
                             dt["ProductCategory"].ProductCategoryName = record.ProductCategoryName;
