@@ -77,22 +77,19 @@
 )
 
 
-<div id="externalEditor" data-role="window" style="display:none" data-visible="true">
-    <table style="width:100%" border="0">
-        <tr>
+<div id="externalEditor" data-role="window" style="display: none" data-visible="true">
+    <div id="editor1">
+        Editor for column 2 will be here
+    </div>
+    <table style="width: 100%" border="0">
+        @*<tr>
             <td>
                 <label for="ProductCategory">Product Category</label>
             </td>
-            <td>                
-                @(Html.Kendo().DropDownList()
-                    .BindTo((IEnumerable)ViewBag.ProductCategories)
-                    .OptionLabel("- Select Product Category - ")
-                    .DataValueField("ProductCategoryId")
-                    .DataTextField("ProductCategoryName")
-                    .Name("ProductCategory")
-                )
+            <td>
+                @(Html.Kendo().DropDownList().BindTo((IEnumerable) ViewBag.ProductCategories).OptionLabel("- Select Product Category - ").DataValueField("ProductCategoryId").DataTextField("ProductCategoryName").Name("ProductCategory"))
             </td>
-        </tr>
+        </tr>*@
         <tr>
             <td>
                 <label for="ProductName">Product Name</label>
@@ -110,13 +107,8 @@
         </tr>
         <tr>
             <td>&nbsp;</td>
-            <td style="float:right;">
-                @(Html.Kendo().Button()
-                    .Name("btnApply")
-                    .HtmlAttributes(new { type = "k-button" })
-                    .Icon("settings")
-                    .Content("Apply")
-                    .Events(x => x.Click("changeApply")))
+            <td style="float: right;">
+                @(Html.Kendo().Button().Name("btnApply").HtmlAttributes(new {type = "k-button"}).Icon("settings").Content("Apply").Events(x => x.Click("changeApply")))
             </td>
         </tr>
     </table>
@@ -176,7 +168,11 @@
 
     function batchEditor() {
         kendo.bind($('#externalEditor'));
+        var grid = $("#grid").data().kendoGrid;
+        $('#editor1').html(grid.columns[1].editor.replace(/ProductCategory_ProductCategoryId/g, 'ProductCategory_ProductCategoryId2'));
+
         var wdw = $('#externalEditor').data('kendoWindow').open();
+        
         wdw.title("Batch Editor");
         wdw.setOptions({
             width: 350,
