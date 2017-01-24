@@ -76,44 +76,7 @@
 )
 
 
-<div id="externalEditor" data-role="window" style="display:none" data-visible="true">
-    <table style="width:100%" border="0">
-        <tr>
-            <td>
-                <label for="ProductCategory">Product Category</label>
-            </td>
-            <td>  
-                <div id="editor1">                   
-                </div>                
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <label for="ProductName">Product Name</label>
-            </td>
-            <td><input type="text" class="k-input k-textbox" name="ProductName" data-bind="value:ProductName"></td>
-
-        </tr>
-        <tr>
-            <td><label for="UnitsInStock">Unit in Stock</label></td>
-            <td><input type="text" class="k-input k-textbox" name="UnitsInStock" data-bind="value:UnitsInStock"></td>
-        </tr>
-        <tr>
-            <td><label for="UnitPrice">Unit Price</label></td>
-            <td><input type="text" class="k-input k-textbox" name="UnitPrice" data-bind="value:UnitPrice"></td>
-        </tr>
-        <tr>
-            <td>&nbsp;</td>
-            <td style="float:right;">
-                @(Html.Kendo().Button()
-                    .Name("btnApply")
-                    .HtmlAttributes(new { type = "k-button" })
-                    .Icon("validation-data")
-                    .Content("Apply")
-                    .Events(x => x.Click("changeApply")))
-            </td>
-        </tr>
-    </table>
+<div id="externalEditor" data-role="window" style="display: none" data-visible="true">
 </div>
 
 
@@ -169,12 +132,11 @@
     }
 
     function batchEditor() {
+        if ($('#externalEditor').html().length === 1)
+            createEditor();
         kendo.bind($('#externalEditor'));
-        var grid = $("#grid").data().kendoGrid;
-        $('#editor1').html(grid.columns[1].editor.replace(/ProductCategory_ProductCategoryId/g, 'ProductCategory_ProductCategoryId2'));
-
-        kendo.bind($('#externalEditor'));
-        var wdw = $('#externalEditor').data('kendoWindow').open();
+        $("#btnApply").kendoButton({ "click": changeApply, "icon": "settings" });
+        var wdw = $('#externalEditor').data('kendoWindow').open();        
         wdw.title("Batch Editor");
         wdw.setOptions({
             width: 350,
@@ -191,11 +153,11 @@
         for (var i in checkedIds) {
             for (var j = 0; j < columns.length; j++) {
                 if (columns[j].encoded) {
-                    var proprtyField = columns[j].field;
+                    var proprtyField = columns[j].field.replace('.', '_');
                      
                     // drop down case
                     if (columns[j].title === 'Product Category') {
-                        var record = $("#ProductCategory_ProductCategoryId2").data("kendoDropDownList").dataItem();
+                        var record = $("#externalEditor").find("#" + proprtyField).data("kendoDropDownList").dataItem();
                         if (checkedIds[i] && record != "" && record.ProductCategoryId>0) {
                             var dt = data[i - 1];
                             dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
@@ -205,7 +167,7 @@
                         }
                     } else {
                        // input field case
-                        var obj = $("input[name=" + proprtyField + "]");
+                        var obj = $("#externalEditor").find("input[name=" + proprtyField + "]");
                         var record = obj.val();
                         if (checkedIds[i] && record != "") {
                             var dt = data[i - 1];
@@ -223,4 +185,30 @@
     function resetProductGrid() {        
         $("#grid").data().kendoGrid.dataSource.read();
     }
+
+    function createEditor() {
+        var grid = $("#grid").data().kendoGrid;
+        var columns = grid.options.columns;
+        var table = $('<table></table>');
+        for (var j = 0; j < columns.length; j++) {
+            if (columns[j].encoded) {
+                var clmn = columns[j];
+                var row = $('<tr></tr>');
+                var field = clmn.field.replace('.', '_');
+                var rowData1 = $('<td></td>').text(clmn.title);
+                var rowData2 = $('<td></td>');
+                rowData2.html(clmn.editor);
+                row.append(rowData1);
+                row.append(rowData2);
+                table.append(row);
+            }
+        }
+        var row = $('<tr></tr>');
+        var rowDataBtn = $('<td></td>')
+        rowDataBtn.html('<button id="btnApply" type="k-button" data-role="button" class="k-button k-button-icontext" role="button" aria-disabled="false" tabindex="0"><span class="k-icon k-i-settings"></span>Apply</button>');
+        row.append(rowDataBtn);
+        table.append(row);
+        $('#externalEditor').html(table);
+    }
+   
 </script>
