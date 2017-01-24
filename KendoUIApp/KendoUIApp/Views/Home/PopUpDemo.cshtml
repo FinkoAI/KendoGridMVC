@@ -3,6 +3,7 @@
     ViewBag.Title = "PopUp Demo";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+<script src="~/Scripts/app/batchEditor.js"></script>
 
 <h2>PopUpDemo <a href="@Url.Action("Index","Home")">Phase 1</a></h2>
 
@@ -10,7 +11,7 @@
             .Name("grid")            
             .Columns(columns =>
             {
-                columns.Template(@<text></text>).ClientTemplate("<input type='checkbox' class='checkbox' id='chkSelect_#= ProductId#' userId='#= ProductId#' />").Width(50).Hidden(true);
+                columns.Template(@<text></text>).ClientTemplate("<input type='checkbox' class='checkbox' id='chkSelect_#= ProductId#' onclick='beg.rowSelection(this)' userId='#= ProductId#' />").Width(50).Hidden(true);
                 columns.Bound(product => product.ProductCategory.ProductCategoryId).EditorTemplateName("CategoryList").Title("Product Category").ClientTemplate("#:ProductCategory.ProductCategoryName#");
                 columns.Bound(product => product.ProductName);
                 columns.Bound(product => product.UnitsInStock);
@@ -37,7 +38,7 @@
                     .HtmlAttributes(new { type = "k-button" })
                     .Icon("settings")
                     .Content("Batch Editor")
-                    .Events(x => x.Click("batchEditor")))
+                    .Events(x => x.Click("beg.Open")))
                 </text>);
                 
             })
@@ -55,7 +56,7 @@
              model.Field(product => product.ProductId).Editable(false);
              model.Field(product => product.ProductCategory).DefaultValue(ViewBag.defaultCategory as KendoUIApp.Models.ProductCategoryModel);
          })
-         .Read(read => read.Action("Products_Read", "Home")).Events(z=>z.RequestEnd("readDone"))
+         .Read(read => read.Action("Products_Read", "Home")).Events(z=>z.RequestEnd("beg.ReadComplete"))
          .Update(update => update.Action("Products_Update", "Home"))
          .Destroy(update => update.Action("Products_Destroy", "Home"))
     )
@@ -88,51 +89,23 @@
 </script>
 
 <script type="text/javascript">
-    function error_handler(e) {
-        if (e.errors) {
-            var message = "Errors:\n";
-            $.each(e.errors, function (key, value) {
-                if ('errors' in value) {
-                    $.each(value.errors, function () {
-                        message += this + "\n";
-                    });
-                }
-            });
-            alert(message);
-        }
-    }
-
-    var checkedIds = {};
-    var isBatchEditorOn = false;
-    var notification = $("#notification").kendoNotification({
-        position: {
-            top: 30,
-            right: 30
-        },
-        stacking: "down",
-        templates: [{
-            type: "error",
-            template: $("#errorTemplate").html()
-        }]
-    }).data("kendoNotification");
-
     $(function () {
-        $('#grid').on('click', '.checkbox', function () {
-            var checked = $(this).is(':checked');
-            var grid = $('#grid').data().kendoGrid;
-            var row = $(this).closest("tr");
-            var dataItem = grid.dataItem(row);
-            checkedIds[dataItem.id] = checked;
-            if (checked) {
-                //-select the row
-                row.addClass("k-state-selected");
-            } else {
-                //-remove selection
-                row.removeClass("k-state-selected");
+        beg.init('grid', 'notification', 'externalEditor');
+        function error_handler(e) {
+            if (e.errors) {
+                var message = "Errors:\n";
+                $.each(e.errors, function (key, value) {
+                    if ('errors' in value) {
+                        $.each(value.errors, function () {
+                            message += this + "\n";
+                        });
+                    }
+                });
+                alert(message);
             }
-        });
-    })
+        }
 
+    });
     function openWindow() {
         var checkedRow = [];
         for (var i in checkedIds) {
@@ -148,140 +121,10 @@
         });
         wdw.center();
         wdw.open();  //and call its open method
-    }
-
-    function batchEditor() {
-        // Show Checkbox Column 
-        if (!isBatchEditorOn) {
-            showCheckBoxes();
-            return;
-        }
-        // Check At Least One Selected
-        var checkedRow = [];
-        for (var i in checkedIds) {
-            if (checkedIds[i]) {
-                checkedRow.push(i);
-            }
-        }
-
-        if (checkedRow.length === 0) {
-
-            notification.show({
-                title: "Batch Editor Message",
-                message: "Please select at least one row to batch-edit"
-            }, "error");
-            return;
-        }
-
-        // Create Batch Editor Once.
-        if ($('#externalEditor').html().length === 1)
-            createEditor();
-
-        kendo.bind($('#externalEditor'));
-        $("#btnApply").kendoButton({ "click": changeApply, "icon": "settings" });
-        var wdw = $('#externalEditor').data('kendoWindow').open();
-        wdw.title("Batch Editor");
-        wdw.setOptions({
-            width: 340,
-            height: 175
-        });
-        wdw.center();
-        wdw.open();  //and call its open method
-    }
-
-    function changeApply() {
-        var grid = $("#grid").data().kendoGrid;
-        var columns = grid.options.columns;
-        var data = grid._data;
-        for (var i in checkedIds) {
-            for (var j = 0; j < columns.length; j++) {
-                if (columns[j].encoded) {
-                    var proprtyField = columns[j].field.replace('.', '_');
-                     
-                    // drop down case
-                    if (columns[j].title === 'Product Category') {
-                        var dropDown = $("#externalEditor").find("#" + proprtyField).data("kendoDropDownList");
-                        var record = dropDown.dataItem();
-                        if (checkedIds[i] && record != "" && record.ProductCategoryId>0) {
-                            var dt = data[i - 1];
-                            dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
-                            dt["ProductCategory"].ProductCategoryName = record.ProductCategoryName;
-                            dt.dirty = true;
-                            grid._modelChange({ model: dt });
-                        }
-                       
-                    } else {
-                       // input field case
-                        var obj = $("#externalEditor").find("input[name=" + proprtyField + "]");
-                        var record = obj.val();
-                        if (checkedIds[i] && record != "") {
-                            var dt = data[i - 1];
-                            dt[proprtyField] = record;
-                            dt.dirty = true;
-                            grid._modelChange({ model: dt });
-                        }
-                        obj.val("");
-                    }
-                }
-            }
-        }
-        // Clear Controls
-        for (var j = 0; j < columns.length; j++) {
-            if (columns[j].encoded) {
-                var proprtyField = columns[j].field.replace('.', '_');
-                if (columns[j].title === 'Product Category') {
-                    var dropDown = $("#externalEditor").find("#" + proprtyField).data("kendoDropDownList");
-                    dropDown.select(0);
-                } else {
-                    var obj = $("#externalEditor").find("input[name=" + proprtyField + "]");
-                    obj.val("");
-                }
-            }
-        }
-
-        checkedIds = [];
-    }
+    }   
+   
 
     function resetProductGrid() {        
         $("#grid").data().kendoGrid.dataSource.read();
-    }
-
-    function createEditor() {
-        var grid = $("#grid").data().kendoGrid;
-        var columns = grid.options.columns;
-        var table = $('<table></table>').addClass('k-widget k-dialog k-window');
-        for (var j = 0; j < columns.length; j++) {
-            if (columns[j].encoded) {
-                var clmn = columns[j];
-                var row = $('<tr></tr>').addClass('k-content');
-                var field = clmn.field.replace('.', '_');
-                var rowData1 = $('<td></td>').text(clmn.title);
-                var rowData2 = $('<td></td>');
-                rowData2.html(clmn.editor);
-                row.append(rowData1);
-                row.append(rowData2);
-                table.append(row);
-            }
-        }
-        var row = $('<tr></tr>');
-        var rowDataBlank = $('<td></td>');
-        row.append(rowDataBlank);
-        var rowDataBtn = $('<td style="float:right;"></td>');
-        rowDataBtn.html('<button id="btnApply" type="k-button" data-role="button" class="k-button k-button-icontext" role="button" aria-disabled="false" tabindex="0"><span class="k-icon k-i-settings"></span>Apply</button>');
-        row.append(rowDataBtn);
-        table.append(row);
-        $('#externalEditor').html(table);
-    }
-   
-    function showCheckBoxes() {
-        isBatchEditorOn = true;
-        var grid = $('#grid').data().kendoGrid;
-        grid.showColumn(0);
-    }
-
-    function readDone() {
-        isBatchEditorOn = false;
-        var grid = $('#grid').data().kendoGrid;
-        grid.hideColumn(0);
     }
 </script>

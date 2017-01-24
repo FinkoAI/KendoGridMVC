@@ -1623,6 +1623,7 @@
     <Content Include="Content\kendo\2016.3.1118-source\mobile\android\actionsheet.less" />
     <Content Include="Content\kendo\2016.3.1118-source\common\transitions.less" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
+    <Content Include="Scripts\app\batchEditor.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
