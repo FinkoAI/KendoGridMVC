@@ -22,7 +22,7 @@ var s, beg = {
             }]
         }).data("kendoNotification");
         s.grid = $('#' + pgridid).data().kendoGrid;
-        s.batchEditor = $('#' + pexternalEditorid);       
+        s.batchEditor = $('#' + pexternalEditorid);
     },
     rowSelection: function (chkbx) {
         if (chkbx != null) {
@@ -92,29 +92,17 @@ var s, beg = {
     },
 
     createEditor: function () {
+        var tableRows = [];
         var columns = s.grid.options.columns;
-        var table = $('<table></table>').addClass('k-widget k-dialog k-window');
         for (var j = 0; j < columns.length; j++) {
             if (columns[j].encoded) {
                 var clmn = columns[j];
-                var row = $('<tr></tr>').addClass('k-content');
-                var field = clmn.field.replace('.', '_');
-                var rowData1 = $('<td></td>').text(clmn.title);
-                var rowData2 = $('<td></td>');
-                rowData2.html(clmn.editor);
-                row.append(rowData1);
-                row.append(rowData2);
-                table.append(row);
+                var obj = { columnText: clmn.title, columnEditor: clmn.editor }
+                tableRows.push(obj);
             }
         }
-        var row = $('<tr></tr>');
-        var rowDataBlank = $('<td></td>');
-        row.append(rowDataBlank);
-        var rowDataBtn = $('<td style="float:right;"></td>');
-        rowDataBtn.html('<button id="btnApply" type="k-button" data-role="button" class="k-button k-button-icontext" role="button" aria-disabled="false" tabindex="0"><span class="k-icon k-i-settings"></span>Apply</button>');
-        row.append(rowDataBtn);
-        table.append(row);
-        s.batchEditor.html(table);
+        var template = kendo.template($("#editorTemplate").html());
+        s.batchEditor.html(template(tableRows));
     },
     Open: function () {
         if (s === null || s === undefined)
@@ -143,19 +131,18 @@ var s, beg = {
         }
 
         // Create Batch Editor Once.
-        if (s.batchEditor.html().length === 1)
+        if (s.batchEditor.html().length === 0)
             beg.createEditor();
 
         kendo.bind(s.batchEditor);
         $("#btnApply").kendoButton({ "click": beg.changeApply, "icon": "settings" });
-        var wdw = s.batchEditor.data('kendoWindow').open();
-        wdw.title("Batch Editor");
-        wdw.setOptions({
-            width: 340,
-            height: 175
-        });
-        wdw.center();
-        wdw.open();  //and call its open method
+        var wdw = s.batchEditor.kendoWindow({
+            title: 'Batch Editor',
+            width: "340px",
+            height: "175px",
+            iframe: false
+        }).data("kendoWindow");
+        wdw.open().center();  //and call its open method
     },
     AddCheckedid: function (pid, value) {
         s.checkedIds[pid] = value;

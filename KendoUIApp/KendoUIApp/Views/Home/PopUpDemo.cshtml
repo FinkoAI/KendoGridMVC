@@ -77,20 +77,41 @@
 )
 
 
-<div id="externalEditor" data-role="window" style="display: none" data-visible="true">
-</div>
-
-<span id="notification" style="display:none;"></span>
-<script id="errorTemplate" type="text/x-kendo-template">
-    <div class="wrong-pass">        
-        <h3>#= title #</h3>
-        <p>#= message #</p>
-    </div>
+<div id="externalEditor" style="display: none"></div>
+<script id="editorTemplate" type="text/x-kendo-template">
+    <table>
+        # for (var i = 0; i < data.length; i++) { #
+        <tr>
+            <td>#= data[i].columnText #</td>
+            <td>#= data[i].columnEditor #</td>
+        </tr>
+        # } #
+        # if (data.length>0) {#
+        <tr>
+            <td></td>
+            <td style="float:right;">
+            <button id="btnApply" type="button" data-role="button" class="k-button k-button-icontext" role="button" aria-disabled="false" tabindex="0">
+                <span class="k-icon k-i-settings"></span>Apply
+            </button>
+            </td>
+        </tr>
+        # } #
+    </table>
 </script>
 
-<script type="text/javascript">
-    $(function () {
-        beg.init('grid', 'notification', 'externalEditor');
+    <span id="notification" style="display:none;"></span>
+    <script id="errorTemplate" type="text/x-kendo-template">
+        <div class="wrong-pass">
+            <h3>#= title #</h3>
+            <p>#= message #</p>
+        </div>
+    </script>
+
+    <script type="text/javascript">
+        $(function () {
+            beg.init('grid', 'notification', 'externalEditor');            
+
+        });
         function error_handler(e) {
             if (e.errors) {
                 var message = "Errors:\n";
@@ -104,27 +125,23 @@
                 alert(message);
             }
         }
-
-    });
-    function openWindow() {
-        var checkedRow = [];
-        for (var i in checkedIds) {
-            if (checkedIds[i]) {
-                checkedRow.push(i);
+        function openWindow() {
+            var checkedRow = [];
+            for (var i in checkedIds) {
+                if (checkedIds[i]) {
+                    checkedRow.push(i);
+                }
             }
+            var wdw = $("#myWindow").data("kendoWindow"); //get the Window widget's instance
+            wdw.refresh({
+                url: "../Home/PopupDataForm",
+                type: "POST",
+                data: { prodIds: checkedRow }
+            });
+            wdw.center();
+            wdw.open();  //and call its open method
         }
-        var wdw = $("#myWindow").data("kendoWindow"); //get the Window widget's instance  
-        wdw.refresh({
-            url: "../Home/PopupDataForm",
-            type: "POST",
-            data: { prodIds: checkedRow }
-        });
-        wdw.center();
-        wdw.open();  //and call its open method
-    }   
-   
-
-    function resetProductGrid() {        
-        $("#grid").data().kendoGrid.dataSource.read();
-    }
-</script>
+        function resetProductGrid() {
+            $("#grid").data().kendoGrid.dataSource.read();
+        }
+    </script>
