@@ -10,7 +10,7 @@ var s, beg = {
 
     init: function (pgridid, notifId, pexternalEditorid) {
         s = this.settings;
-        s.notification = $('#' + notifId).kendoNotification({
+        s.notification = $("#" + notifId).kendoNotification({
             position: {
                 top: 30,
                 right: 30
@@ -21,8 +21,8 @@ var s, beg = {
                 template: $("#errorTemplate").html()
             }]
         }).data("kendoNotification");
-        s.grid = $('#' + pgridid).data().kendoGrid;
-        s.batchEditor = $('#' + pexternalEditorid);
+        s.grid = $("#" + pgridid).data().kendoGrid;
+        s.batchEditor = $("#" + pexternalEditorid);
     },
     rowSelection: function (chkbx) {
         if (chkbx != null) {
@@ -44,51 +44,59 @@ var s, beg = {
     changeApply: function () {
         var columns = s.grid.options.columns;
         var data = s.grid._data;
+        var proprtyField;
+        var j;
+        var dropDown;
+        var obj;
         for (var i in s.checkedIds) {
-            for (var j = 0; j < columns.length; j++) {
-                if (columns[j].encoded) {
-                    var proprtyField = columns[j].field.replace('.', '_');
+            if (s.checkedIds.hasOwnProperty(i)) {
+                for (j = 0; j < columns.length; j++) {
+                    if (columns[j].encoded) {
+                        proprtyField = columns[j].field.replace(".", "_"); // drop down case
+                        var record;
+                        var dt;
+                        if (columns[j].title === 'Product Category') {
+                            dropDown = s.batchEditor.find("#" + proprtyField).data("kendoDropDownList");
+                            record = dropDown.dataItem();
+                            if (s.checkedIds[i] && record !== "" && record.ProductCategoryId > 0) {
+                                dt = data[i - 1];
+                                dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
+                                dt["ProductCategory"].ProductCategoryName = record.ProductCategoryName;
+                                dt.dirty = true;
+                                s.grid._modelChange({ model: dt });
+                            }
 
-                    // drop down case
-                    if (columns[j].title === 'Product Category') {
-                        var dropDown = s.batchEditor.find("#" + proprtyField).data("kendoDropDownList");
-                        var record = dropDown.dataItem();
-                        if (s.checkedIds[i] && record != "" && record.ProductCategoryId > 0) {
-                            var dt = data[i - 1];
-                            dt["ProductCategory"].ProductCategoryId = record.ProductCategoryId;
-                            dt["ProductCategory"].ProductCategoryName = record.ProductCategoryName;
-                            dt.dirty = true;
-                            s.grid._modelChange({ model: dt });
-                        }
-
-                    } else {
-                        // input field case
-                        var obj = s.batchEditor.find("input[name=" + proprtyField + "]");
-                        var record = obj.val();
-                        if (s.checkedIds[i] && record != "") {
-                            var dt = data[i - 1];
-                            dt[proprtyField] = record;
-                            dt.dirty = true;
-                            s.grid._modelChange({ model: dt });
+                        } else {
+                            // input field case
+                            obj = s.batchEditor.find("input[name=" + proprtyField + "]");
+                            record = obj.val();
+                            if (s.checkedIds[i] && record !== "") {
+                                dt = data[i - 1];
+                                dt[proprtyField] = record;
+                                dt.dirty = true;
+                                s.grid._modelChange({ model: dt });
+                            }
                         }
                     }
                 }
             }
         }
         // Clear Controls
-        for (var j = 0; j < columns.length; j++) {
+        for (j = 0; j < columns.length; j++) {
             if (columns[j].encoded) {
-                var proprtyField = columns[j].field.replace('.', '_');
-                if (columns[j].title === 'Product Category') {
-                    var dropDown = s.batchEditor.find("#" + proprtyField).data("kendoDropDownList");
+                proprtyField = columns[j].field.replace('.', '_');
+                if (columns[j].title === "Product Category") {
+                    dropDown = s.batchEditor.find("#" + proprtyField).data("kendoDropDownList");
                     dropDown.select(0);
                 } else {
-                    var obj = s.batchEditor.find("input[name=" + proprtyField + "]");
+                    obj = s.batchEditor.find("input[name=" + proprtyField + "]");
                     obj.val("");
                 }
             }
         }
         s.checkedIds = {};
+        $("#btnApply").closest(".k-window-content").data("kendoWindow").close();
+
     },
 
     createEditor: function () {
@@ -116,8 +124,10 @@ var s, beg = {
         // Check At Least One Selected
         var checkedRow = [];
         for (var i in s.checkedIds) {
-            if (s.checkedIds[i]) {
-                checkedRow.push(i);
+            if (s.checkedIds.hasOwnProperty(i)) {
+                if (s.checkedIds[i]) {
+                    checkedRow.push(i);
+                }
             }
         }
 
@@ -143,6 +153,7 @@ var s, beg = {
             iframe: false
         }).data("kendoWindow");
         wdw.open().center();  //and call its open method
+        return false;
     },
     AddCheckedid: function (pid, value) {
         s.checkedIds[pid] = value;
@@ -153,5 +164,6 @@ var s, beg = {
         s.isBatchEditorOn = false;
         if (s.grid != null)
             s.grid.hideColumn(0);
+        return false;
     }
 };

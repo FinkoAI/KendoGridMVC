@@ -7,12 +7,13 @@ namespace KendoUIApp.Models
 {
     public class ProductModelRepository
     {
-        const int identityIncrementValue = 1;
+        private const int IdentityIncrementValue = 1;
+
         public IEnumerable<ProductModel> Products
         {
             get
             {
-                IEnumerable<ProductModel> result = (IEnumerable<ProductModel>)HttpContext.Current.Session["Products"];
+                var result = (IEnumerable<ProductModel>) HttpContext.Current.Session["Products"];
 
                 if (result == null)
                 {
@@ -27,7 +28,7 @@ namespace KendoUIApp.Models
         {
             get
             {
-                IEnumerable<ProductCategoryModel> result = (IEnumerable<ProductCategoryModel>)HttpContext.Current.Session["ProductCategories"];
+                var result = (IEnumerable<ProductCategoryModel>) HttpContext.Current.Session["ProductCategories"];
 
                 if (result == null)
                 {
@@ -43,16 +44,16 @@ namespace KendoUIApp.Models
             var list = new List<ProductModel>();
             var categories = ProductCategories.ToArray();
             var idx = 1;
-            Random random = new Random();
+            var random = new Random();
             for (var i = 1; i <= 50; i++)
             {
-                int randomCategorySelection = random.Next(0, ProductCategories.Count());
+                var randomCategorySelection = random.Next(0, ProductCategories.Count());
                 list.Add(new ProductModel
                 {
                     ProductId = idx++,
                     ProductName = "Product" + idx,
                     UnitPrice = i,
-                    UnitsInStock = (short?)(i + 10),
+                    UnitsInStock = (short?) (i + 10),
                     Discontinued = false,
                     ProductCategory = categories[randomCategorySelection]
                 });
@@ -71,13 +72,12 @@ namespace KendoUIApp.Models
                 list.Add(new ProductCategoryModel
                 {
                     ProductCategoryId = idx++,
-                    ProductCategoryName = "Product Category " + idx,
+                    ProductCategoryName = "Product Category " + idx
                 });
             }
 
             return list;
         }
-
 
         public void Update(ProductModel product)
         {
@@ -95,8 +95,8 @@ namespace KendoUIApp.Models
             }
         }
 
-
-        public void Destroy(ProductModel product) {
+        public void Destroy(ProductModel product)
+        {
             var prod = Products.ToList().Find(x => x.ProductId.Equals(product.ProductId));
             if (prod != null)
             {
@@ -106,8 +106,7 @@ namespace KendoUIApp.Models
 
         public void Create(ProductModel product)
         {
-           
-            product.ProductId = (Products.ToList().Count() + identityIncrementValue);
+            product.ProductId = (Products.ToList().Count() + IdentityIncrementValue);
             Products.ToList().Add(product);
         }
     }

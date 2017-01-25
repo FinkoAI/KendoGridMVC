@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-
-namespace KendoUIApp.Models
+﻿namespace KendoUIApp.Models
 {
     public class ProductModel
     {
@@ -13,6 +8,5 @@ namespace KendoUIApp.Models
         public short? UnitsInStock { get; set; }
         public bool Discontinued { get; set; }
         public ProductCategoryModel ProductCategory { get; set; }
-
     }
 }

@@ -10,39 +10,40 @@ namespace KendoUIApp.Controllers
     public class HomeController : Controller
     {
         // GET: Home
-        ProductModelRepository productService = new ProductModelRepository();
+        readonly ProductModelRepository _productService = new ProductModelRepository();
         public ActionResult Index()
         {
-            ViewBag.ProductCategories = productService.ProductCategories;
-            ViewBag.defaultCategory = productService.ProductCategories.First();
+            ViewBag.ProductCategories = _productService.ProductCategories;
+            ViewBag.defaultCategory = _productService.ProductCategories.First();
             return View();
         }
 
         public ActionResult PopUpDemo()
         {
-            ViewBag.ProductCategories = productService.ProductCategories;
-            ViewBag.defaultCategory = productService.ProductCategories.First();
+            ViewBag.ProductCategories = _productService.ProductCategories;
+            ViewBag.defaultCategory = _productService.ProductCategories.First();
             return View();
         }
 
         public ActionResult Products_Read([DataSourceRequest] DataSourceRequest request)
         {
-            return Json(productService.Products.ToDataSourceResult(request));
+            return Json(_productService.Products.ToDataSourceResult(request));
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
         public ActionResult Products_Update([DataSourceRequest] DataSourceRequest request,
            [Bind(Prefix = "models")]IEnumerable<ProductModel> products)
         {
+            var productModels = products as IList<ProductModel> ?? products.ToList();
             if (products != null && ModelState.IsValid)
             {
-                foreach (var product in products)
+                foreach (var product in productModels.ToList())
                 {
-                    productService.Update(product);
+                    _productService.Update(product);
                 }
             }
 
-            return Json(products.ToDataSourceResult(request, ModelState));
+            return Json(productModels.ToDataSourceResult(request, ModelState));
         }
 
         [AcceptVerbs(HttpVerbs.Post)]
@@ -51,7 +52,7 @@ namespace KendoUIApp.Controllers
             if (product != null && ModelState.IsValid)
             {
 
-                productService.Update(product);
+                _productService.Update(product);
             }
 
             return Json(null);
@@ -62,7 +63,7 @@ namespace KendoUIApp.Controllers
         {
             if (product != null)
             {
-                productService.Destroy(product);
+                _productService.Destroy(product);
             }
 
             return Json(new[] { product }.ToDataSourceResult(request, ModelState));
@@ -73,7 +74,7 @@ namespace KendoUIApp.Controllers
         {
             if (product != null && ModelState.IsValid)
             {
-                productService.Create(product);
+                _productService.Create(product);
             }
 
             return Json(new[] { product }.ToDataSourceResult(request, ModelState));
@@ -86,7 +87,7 @@ namespace KendoUIApp.Controllers
             else
                 ViewBag.Message = "No Record is select for product category change";
             TempData["prodIds"] = prodIds;
-            ViewBag.ProductCategories = productService.ProductCategories;
+            ViewBag.ProductCategories = _productService.ProductCategories;
             return View();
         }
 
@@ -96,12 +97,12 @@ namespace KendoUIApp.Controllers
             string message = "No Record is update";
             if (TempData["prodIds"] != null)
             {
-                var prodIds = (IEnumerable<int>)TempData["prodIds"];
+                var prodIds = (IList<int>)TempData["prodIds"];
                 message = string.Format("{0} record updated", prodIds.Count());
-                var prodCategory = productService.ProductCategories.ToList().Find(y => y.ProductCategoryId.Equals(prodCatId));
+                var prodCategory = _productService.ProductCategories.ToList().Find(y => y.ProductCategoryId.Equals(prodCatId));
                 prodIds.ToList().ForEach(x =>
                 {
-                    var product = productService.Products.ToList().Find(y => y.ProductId.Equals(x));
+                    var product = _productService.Products.ToList().Find(y => y.ProductId.Equals(x));
                     product.ProductCategory = prodCategory;
                 });
             }           
