@@ -83,10 +83,8 @@ namespace KendoUIApp.Models
             List<string> pageFilterUrlList;
             if (GetAllPages(rootDocument, out pageFilterUrlList))
             {
-
                 pageFilterUrlList.ForEach(
                     page => { itemList.AddRange(ParsePage(page)); });
-
             }
             return itemList;
         }
@@ -104,16 +102,15 @@ namespace KendoUIApp.Models
             const string totalPagesClass = "//a[@class='page-nav__link page-nav__link_next-all']";
             var pageSize = rootDocument.DocumentNode.SelectNodes(pageSizeClass);
             var totalPages = rootDocument.DocumentNode.SelectSingleNode(totalPagesClass);
-            if (pageSize != null && pageSize.Count>0)
+            if (pageSize != null && pageSize.Count > 0)
             {
                 pageSize.ForEach(node =>
                 {
-                    if (node.Attributes.Count>1)
+                    if (node.Attributes.Count > 1)
                     {
                         pageSizeSelection = node.GetAttributeValue("value", "");
                     }
                 });
-       
             }
             if (totalPages != null)
             {
@@ -200,16 +197,17 @@ namespace KendoUIApp.Models
             decimal.TryParse(correctValue, out price);
             return true;
         }
-        //
+
         private bool HasDiscount(HtmlDocument rootDocument, out decimal discount)
         {
             discount = 0;
             const string productDiscountClass = "//span[@class='subnav-product__discount']";
             var productDiscountPrice = rootDocument.DocumentNode.SelectSingleNode(productDiscountClass);
             if (productDiscountPrice == null) return false;
-               decimal.TryParse(productDiscountPrice.InnerText.TrimEnd('%'), out discount);
+            decimal.TryParse(productDiscountPrice.InnerText.TrimEnd('%'), out discount);
             return true;
         }
+
         private bool HasSizes(HtmlDocument rootDocument, out List<Size> sizes)
         {
             const string availableSizesClass = "//li[contains(@class, 'radio__item radio__item_size')]";
@@ -218,7 +216,7 @@ namespace KendoUIApp.Models
             availableSizes.ForEach(node =>
             {
                 var availSize = node.GetAttributeValue("id", "").Replace("size_", "");
-                sizeList.Add(new Size {SizeText = availSize, IsAvailable = !node.InnerHtml.Contains("disabled") });
+                sizeList.Add(new Size {SizeText = availSize, IsAvailable = !node.InnerHtml.Contains("disabled")});
             });
             sizes = sizeList.OrderBy(x => x.SizeText).ToList();
             return sizes.Count > 0;
