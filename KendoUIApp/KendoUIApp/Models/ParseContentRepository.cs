@@ -39,6 +39,12 @@ namespace KendoUIApp.Models
             {
                 item.Price = price;
             }
+            decimal discount;
+            if (HasDiscount(rootDocument, out discount))
+            {
+                item.Discount = discount;
+            }
+
             List<Size> itemSize;
             if (HasSizes(rootDocument, out itemSize))
             {
@@ -54,13 +60,95 @@ namespace KendoUIApp.Models
 
         public List<Item> ParsePage(string url)
         {
-            return null;
+            var itemList = new List<Item>();
+            var website = new HtmlWeb();
+            var rootDocument = website.Load(url);
+            if (rootDocument == null) return itemList;
+            List<string> itemDescriptionUrlList;
+            if (HasItems(rootDocument, out itemDescriptionUrlList))
+            {
+                itemDescriptionUrlList.ForEach(
+                    item => { itemList.Add(ParseItem(string.Format("https://www.sapato.ru{0}", item))); });
+            }
+
+            return itemList;
         }
 
         public List<Item> ParseAllPages(string url)
         {
-            return null;
+            var itemList = new List<Item>();
+            var website = new HtmlWeb();
+            var rootDocument = website.Load(url);
+            if (rootDocument == null) return itemList;
+            List<string> pageFilterUrlList;
+            if (GetAllPages(rootDocument, out pageFilterUrlList))
+            {
+
+                pageFilterUrlList.ForEach(
+                    page => { itemList.AddRange(ParsePage(page)); });
+
+            }
+            return itemList;
         }
+
+        #region Parse All Pages
+
+        private bool GetAllPages(HtmlDocument rootDocument, out List<string> pageList)
+        {
+            var newPageList = new List<string>();
+            const char finalPageSplitChar = '=';
+            const int finalQtyIndex = 1;
+            var pageSizeSelection = string.Empty;
+            var totalItemPages = 0;
+            const string pageSizeClass = "//select[@class='page-count']/option";
+            const string totalPagesClass = "//a[@class='page-nav__link page-nav__link_next-all']";
+            var pageSize = rootDocument.DocumentNode.SelectNodes(pageSizeClass);
+            var totalPages = rootDocument.DocumentNode.SelectSingleNode(totalPagesClass);
+            if (pageSize != null && pageSize.Count>0)
+            {
+                pageSize.ForEach(node =>
+                {
+                    if (node.Attributes.Count>1)
+                    {
+                        pageSizeSelection = node.GetAttributeValue("value", "");
+                    }
+                });
+       
+            }
+            if (totalPages != null)
+            {
+                var finalValue = totalPages.GetAttributeValue("href", "").Split(finalPageSplitChar)[finalQtyIndex];
+                int.TryParse(finalValue, out totalItemPages);
+            }
+            Enumerable.Range(1, totalItemPages).ForEach(x =>
+            {
+                newPageList.Add(string.Format("https://www.sapato.ru/woman/?page={0}&{1}", x,
+                    pageSizeSelection));
+            }
+                );
+
+            pageList = newPageList;
+            return pageList.Count > 0;
+        }
+
+        #endregion
+
+        #region Parse Page Methods
+
+        private bool HasItems(HtmlDocument rootDocument, out List<string> urlList)
+        {
+            var newUrlList = new List<string>();
+            const string availableItemClass =
+                "//div[@class='catalog-items__list catalog__list']//article[@class='catalog__item clearfix']//a[@class='catalog__image']";
+            var availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
+
+            availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
+
+            urlList = newUrlList;
+            return urlList.Count > 0;
+        }
+
+        #endregion
 
         #region Parsing Item Methods
 
@@ -112,26 +200,26 @@ namespace KendoUIApp.Models
             decimal.TryParse(correctValue, out price);
             return true;
         }
-
+        //
+        private bool HasDiscount(HtmlDocument rootDocument, out decimal discount)
+        {
+            discount = 0;
+            const string productDiscountClass = "//span[@class='subnav-product__discount']";
+            var productDiscountPrice = rootDocument.DocumentNode.SelectSingleNode(productDiscountClass);
+            if (productDiscountPrice == null) return false;
+               decimal.TryParse(productDiscountPrice.InnerText.TrimEnd('%'), out discount);
+            return true;
+        }
         private bool HasSizes(HtmlDocument rootDocument, out List<Size> sizes)
         {
-            const string availableSizesClass = "//li[@class='radio__item radio__item_size']";
-            const string unavailableSizesClass = "//li[@class='radio__item radio__item_size disabled']";
+            const string availableSizesClass = "//li[contains(@class, 'radio__item radio__item_size')]";
             var sizeList = new List<Size>();
             var availableSizes = rootDocument.DocumentNode.SelectNodes(availableSizesClass);
-            var unavailableSizes = rootDocument.DocumentNode.SelectNodes(unavailableSizesClass);
-
             availableSizes.ForEach(node =>
             {
                 var availSize = node.GetAttributeValue("id", "").Replace("size_", "");
-                sizeList.Add(new Size {SizeText = availSize, IsAvailable = true});
+                sizeList.Add(new Size {SizeText = availSize, IsAvailable = !node.InnerHtml.Contains("disabled") });
             });
-            unavailableSizes.ForEach(node =>
-            {
-                var availSize = node.GetAttributeValue("id", "").Replace("size_", "");
-                sizeList.Add(new Size {SizeText = availSize, IsAvailable = false});
-            });
-
             sizes = sizeList.OrderBy(x => x.SizeText).ToList();
             return sizes.Count > 0;
         }

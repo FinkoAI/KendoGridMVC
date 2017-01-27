@@ -7,6 +7,7 @@ namespace KendoUIApp.Models
         public string Id { get; set; }
         public List<string> ImageUrls { get; set; }
         public decimal Price { get; set; }
+        public decimal Discount { get; set; }
         public string Type { get; set; }
         public string SubType { get; set; }
         public string Brand { get; set; }
