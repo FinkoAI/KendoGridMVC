@@ -10,3 +10,4 @@
 /**/bin/**/Release
 /**/obj/**/Debug
 *.config
+*.user
