@@ -1624,6 +1624,7 @@
     <Content Include="Content\kendo\2016.3.1118-source\common\transitions.less" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\app\batchEditor.js" />
+    <Content Include="Scripts\app\templateLoader.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />
     <Content Include="Scripts\jquery-1.10.2.js" />
@@ -3006,8 +3007,8 @@
     <Content Include="Views\Shared\_Layout.cshtml" />
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\EditorTemplates\CategoryList.cshtml" />
-    <Content Include="Views\Home\PopupDataForm.cshtml" />
     <Content Include="Views\Home\PopUpDemo.cshtml" />
+    <Content Include="Templates\batchEditor.tmpl.htm" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

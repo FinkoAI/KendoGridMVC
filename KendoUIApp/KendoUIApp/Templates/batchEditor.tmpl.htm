@@ -1,0 +1,20 @@
+﻿<script id="editorTemplate" type="text/x-kendo-template">
+    <table>
+        # for (var i = 0; i < data.length; i++) { #
+        <tr>
+            <td>#= data[i].columnText #</td>
+            <td>#= data[i].columnEditor #</td>
+        </tr>
+        # } #
+        # if (data.length>0) {#
+        <tr>
+            <td></td>
+            <td style="float:right;">
+            <button id="btnApply" type="button" data-role="button" class="k-button k-button-icontext" role="button" aria-disabled="false" tabindex="0">
+                <span class="k-icon k-i-settings"></span>Apply
+            </button>
+            </td>
+        </tr>
+        # } #
+    </table>
+</script>
