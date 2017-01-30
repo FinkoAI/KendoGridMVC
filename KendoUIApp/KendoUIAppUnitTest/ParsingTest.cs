@@ -17,8 +17,8 @@ namespace KendoUIAppUnitTest
         [TestMethod]
         public void ParsingItem()
         {
-            var itemObj2 = _parseContent.ParseItem("https://www.sapato.ru/11155918");
-            var itemObj = _parseContent.ParseItem(ParseItemUrl);
+            var itemObj2 = _parseContent.ParseItem("https://www.sapato.ru/11155918", Website.Sapato);
+            var itemObj = _parseContent.ParseItem(ParseItemUrl, Website.Sapato);
             Assert.AreEqual(itemObj.ImageUrls.Count, 4); // Page Shown 4 Images
             Assert.AreEqual(itemObj.Id, "11144426");
         }
