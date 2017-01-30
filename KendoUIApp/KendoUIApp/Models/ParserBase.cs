@@ -142,8 +142,12 @@ namespace KendoUIApp.Models
                     productTitleClass = "//ul[@class='breadcrumb']//li";
                     var productTitleCollection = rootDocument.DocumentNode.SelectNodes(productTitleClass);
                     if (productTitleCollection == null) return false;
-                    type = productTitleCollection[bashmagTypeIndex].InnerText;
-                    subType = productTitleCollection[bashmagSubTypeIndex].InnerText;
+                    type = productTitleCollection.Count - 1 >= bashmagTypeIndex
+                        ? productTitleCollection[bashmagTypeIndex].InnerText
+                        : string.Empty;
+                    subType = productTitleCollection.Count - 1 >= bashmagSubTypeIndex
+                        ? productTitleCollection[bashmagSubTypeIndex].InnerText
+                        : string.Empty;
                     productTitleClass = "//div[@class='product-manuf']";
                     productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
                     brand = productTitle.InnerText.Replace('\t', ' ').Replace('\n', ' ').Trim();
@@ -176,6 +180,11 @@ namespace KendoUIApp.Models
                     const char bashmagPriceSplitter = ' ';
                     productPriceClass = "//div[@class='SalesPriceCat']";
                     productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
+                    if (productPrice == null)
+                    {
+                        productPriceClass = "//div[@class='BasePriceCat']";
+                        productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
+                    }
                     if (productPrice == null) return false;
                     correctValue = productPrice.InnerText.Split(bashmagPriceSplitter)[bashmagPriceIndex];
                     decimal.TryParse(correctValue, out price);

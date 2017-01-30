@@ -62,5 +62,12 @@ namespace KendoUIAppUnitTest
         {
             _parseContent.ParsePage(BashmagParseOnePageUrl, Website.Bashmag);
         }
+
+        [TestMethod]
+        public void BashmagParsingAllPage()
+        {
+            const string url = @"https://www.bashmag.ru/women";
+            _parseContent.ParseAllPages(url, Website.Bashmag);
+        }
     }
 }

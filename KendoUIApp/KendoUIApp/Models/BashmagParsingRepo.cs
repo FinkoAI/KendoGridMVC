@@ -99,5 +99,35 @@ namespace KendoUIApp.Models
             });
             return nextPageUrl;
         }
+
+
+        private List<Item> ParseAllPagesBashmag(string url)
+        {
+            var itemList = new List<Item>();
+            var website = new HtmlWeb();
+            var rootDocument = website.Load(url);
+            if (rootDocument == null) return itemList;
+
+            #region Get Categories
+            var categoriesUrl = new List<string>();
+            const string categoryLinkClass = "//div[@class='category-item ']//a";
+            var categories = rootDocument.DocumentNode.SelectNodes(categoryLinkClass);
+            categories.ForEach(item => { categoriesUrl.Add(item.GetAttributeValue("href", "")); });
+            #endregion
+
+            var subcategoriesUrl = new List<string>();
+            categoriesUrl.ForEach(category =>
+            {
+                rootDocument = website.Load(string.Format("https://www.bashmag.ru{0}", category));
+                const string subcategoryLinkClass = "//div[@class='category-item ']//a";
+                var availableItem = rootDocument.DocumentNode.SelectNodes(subcategoryLinkClass);
+                availableItem.ForEach(item => { subcategoriesUrl.Add(item.GetAttributeValue("href", "")); });
+            });
+            subcategoriesUrl.ForEach(subCate =>
+            {
+                itemList.AddRange(ParsePageBashmag(string.Format("https://www.bashmag.ru{0}", subCate)));
+            });
+            return itemList;
+        }
     }
 }
