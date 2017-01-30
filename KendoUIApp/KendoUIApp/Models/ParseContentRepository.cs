@@ -27,6 +27,9 @@ namespace KendoUIApp.Models
                 case Website.Sapato:
                     itemList = ParsePageSaptro(url);
                     break;
+                case Website.Bashmag:
+                    itemList = ParsePageBashmag(url);
+                    break;
             }
             return itemList;
         }

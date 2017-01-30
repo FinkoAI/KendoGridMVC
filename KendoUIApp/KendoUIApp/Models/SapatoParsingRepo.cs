@@ -62,7 +62,7 @@ namespace KendoUIApp.Models
             var rootDocument = website.Load(url);
             if (rootDocument == null) return itemList;
             List<string> itemDescriptionUrlList;
-            if (HasItems(rootDocument, out itemDescriptionUrlList))
+            if (HasItems(rootDocument,Website.Sapato, out itemDescriptionUrlList))
             {
                 itemDescriptionUrlList.ForEach(
                     item => { itemList.Add(ParseItemSaptro(string.Format("https://www.sapato.ru{0}", item))); });

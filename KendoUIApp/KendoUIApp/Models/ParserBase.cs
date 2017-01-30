@@ -45,15 +45,24 @@ namespace KendoUIApp.Models
             return pageList.Count > 0;
         }
 
-        protected bool HasItems(HtmlDocument rootDocument, out List<string> urlList)
+        protected bool HasItems(HtmlDocument rootDocument, Website website, out List<string> urlList)
         {
             var newUrlList = new List<string>();
-            const string availableItemClass =
-                "//div[@class='catalog-items__list catalog__list']//article[@class='catalog__item clearfix']//a[@class='catalog__image']";
-            var availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
-
-            availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
-
+            string availableItemClass;
+            HtmlNodeCollection availableItem;
+            switch (website)
+            {
+                case Website.Sapato:
+                     availableItemClass = "//div[@class='catalog-items__list catalog__list']//article[@class='catalog__item clearfix']//a[@class='catalog__image']";
+                    availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
+                    availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
+                    break;
+                case Website.Bashmag:
+                    availableItemClass = "//div[@class='product-image-cont']//a";
+                    availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
+                    availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
+                    break;
+            }
             urlList = newUrlList;
             return urlList.Count > 0;
         }
@@ -129,6 +138,7 @@ namespace KendoUIApp.Models
                 case Website.Bashmag:
                     const int bashmagTypeIndex = 3;
                     const int bashmagSubTypeIndex = 4;
+                    const int brandImageIndex = 1;
                     productTitleClass = "//ul[@class='breadcrumb']//li";
                     var productTitleCollection = rootDocument.DocumentNode.SelectNodes(productTitleClass);
                     if (productTitleCollection == null) return false;
@@ -137,6 +147,10 @@ namespace KendoUIApp.Models
                     productTitleClass = "//div[@class='product-manuf']";
                     productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
                     brand = productTitle.InnerText.Replace('\t', ' ').Replace('\n', ' ').Trim();
+                    if (string.IsNullOrEmpty(brand))
+                    {
+                        brand = productTitle.ChildNodes[brandImageIndex].GetAttributeValue("alt", "");
+                    }
                     break;
             }
             return true;

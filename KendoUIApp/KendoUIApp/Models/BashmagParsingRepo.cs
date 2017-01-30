@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using HtmlAgilityPack;
+using WebGrease.Css.Extensions;
 
 namespace KendoUIApp.Models
 {
@@ -55,6 +56,48 @@ namespace KendoUIApp.Models
                 item.Properties = properties;
             }
             return item;
+        }
+
+        private List<Item> ParsePageBashmag(string url)
+        {
+            var itemList = new List<Item>();
+            var website = new HtmlWeb();
+            var rootDocument = website.Load(url);
+            if (rootDocument == null) return itemList;
+            var hasNextPage = "Has Data";
+            var finalitemDescriptionUrlList = new List<string>();
+            while (!string.IsNullOrEmpty(hasNextPage))
+            {
+                List<string> itemDescriptionUrlList;
+                if (HasItems(rootDocument, Website.Bashmag, out itemDescriptionUrlList))
+                {
+                    finalitemDescriptionUrlList.AddRange(itemDescriptionUrlList);
+                }
+                hasNextPage = BashmagHasMoreThenCurrentPageItems(rootDocument);
+                if (!string.IsNullOrEmpty(hasNextPage))
+                    rootDocument = website.Load(string.Format("https://www.bashmag.ru{0}", hasNextPage));
+            }
+
+            finalitemDescriptionUrlList.ForEach(
+                item => { itemList.Add(ParseItemBashmag(string.Format("https://www.bashmag.ru{0}", item))); });
+
+            return itemList;
+        }
+
+        private string BashmagHasMoreThenCurrentPageItems(HtmlDocument rootDocument)
+        {
+            string nextPageUrl = string.Empty;
+            const string nextPageSignCode = "&rsaquo;";
+            const string nextPageLinkClass = "//ul[@class='pagination']//li";
+            var nextPageUrlItems = rootDocument.DocumentNode.SelectNodes(nextPageLinkClass);
+            nextPageUrlItems.ForEach(pager =>
+            {
+                if (pager.InnerText.Equals(nextPageSignCode))
+                {
+                    nextPageUrl = pager.FirstChild.GetAttributeValue("href", "");
+                }
+            });
+            return nextPageUrl;
         }
     }
 }
