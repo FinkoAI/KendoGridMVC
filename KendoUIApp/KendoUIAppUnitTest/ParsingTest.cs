@@ -11,10 +11,13 @@ namespace KendoUIAppUnitTest
         private const string ParseAllPageUrl = "https://www.sapato.ru/woman/";
         private readonly ParseContentRepository _parseContent = new ParseContentRepository();
 
+        private const string BashmagParseItemUrl =
+            "https://www.bashmag.ru/men/36-obuv_/41-botinki/1751-Botinki-liga-detail";
+
         [TestMethod]
         public void ParsingItem()
         {
-            var itemObj = _parseContent.ParseItem(ParseItemUrl);
+            var itemObj = _parseContent.ParseItem(ParseItemUrl,Website.Sapato);
             Assert.AreEqual(itemObj.ImageUrls.Count, 4); // Page Shown 4 Images
             Assert.AreEqual(itemObj.Id, "11144426");
         }
@@ -22,20 +25,26 @@ namespace KendoUIAppUnitTest
         [TestMethod]
         public void ParsingPage()
         {
-            var itemObj = _parseContent.ParsePage(ParseOnePageUrl);
+            _parseContent.ParsePage(ParseOnePageUrl, Website.Sapato);
         }
 
         [TestMethod]
         public void ParsingSection()
         {
-            var itemObj = _parseContent.ParseAllPages(ParseAllPageUrl);
+            _parseContent.ParseAllPages(ParseAllPageUrl, Website.Sapato);
         }
 
         [TestMethod]
         public void ParsingNewItem()
         {
             const string url = @"https://www.sapato.ru/11155918";
-            var itemObj = _parseContent.ParseItem(url);
+            _parseContent.ParseItem(url, Website.Sapato);
+        }
+
+        [TestMethod]
+        public void ParsingBashmagItem()
+        {
+            _parseContent.ParseItem(BashmagParseItemUrl, Website.Bashmag);
         }
     }
 }
