@@ -53,7 +53,8 @@ namespace KendoUIApp.Models
             switch (website)
             {
                 case Website.Sapato:
-                     availableItemClass = "//div[@class='catalog-items__list catalog__list']//article[@class='catalog__item clearfix']//a[@class='catalog__image']";
+                    availableItemClass =
+                        "//div[@class='catalog-items__list catalog__list']//article[@class='catalog__item clearfix']//a[@class='catalog__image']";
                     availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
                     availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
                     break;
@@ -61,6 +62,11 @@ namespace KendoUIApp.Models
                     availableItemClass = "//div[@class='product-image-cont']//a";
                     availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
                     availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
+                    break;
+                case Website.Ekonika:
+                    availableItemClass = "//div[@class='catalog-items']//ul//li";
+                    availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
+                    availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("id", "")); });
                     break;
             }
             urlList = newUrlList;
@@ -86,6 +92,12 @@ namespace KendoUIApp.Models
                     if (productId == null) return false;
                     id = productId.GetAttributeValue("value", "");
                     break;
+                case Website.Ekonika:
+                    productIdClass = "//div[@class='item-fav']";
+                    productId = rootDocument.DocumentNode.SelectSingleNode(productIdClass);
+                    if (productId == null) return false;
+                    id = productId.GetAttributeValue("data-attr", "");
+                    break;
             }
             return true;
         }
@@ -109,6 +121,12 @@ namespace KendoUIApp.Models
                     if (imageGallery == null || imageGallery.Count == 0) return false;
                     imageUrls.AddRange(imageGallery.Select(node => node.GetAttributeValue("src", "")));
                     break;
+                case Website.Ekonika:
+                    productGalleryClass = "//ul[@class='item-photo-list']//img";
+                    imageGallery = rootDocument.DocumentNode.SelectNodes(productGalleryClass);
+                    if (imageGallery == null || imageGallery.Count == 0) return false;
+                    imageUrls.AddRange(imageGallery.Select(node => node.GetAttributeValue("src", "")));
+                    break;
             }
             return true;
         }
@@ -124,13 +142,14 @@ namespace KendoUIApp.Models
             subType = string.Empty;
             string productTitleClass;
             HtmlNode productTitle;
+            string[] data;
             switch (website)
             {
                 case Website.Sapato:
                     productTitleClass = "//h1[@class='product-info__title']";
                     productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
                     if (productTitle == null) return false;
-                    var data = productTitle.InnerHtml.Split(typeBrandSeperator);
+                    data = productTitle.InnerHtml.Split(typeBrandSeperator);
                     type = data[typeIndex];
                     brand = data[brandIndex];
                     subType = productTitle.NextSibling.NextSibling.InnerText;
@@ -155,6 +174,15 @@ namespace KendoUIApp.Models
                     {
                         brand = productTitle.ChildNodes[brandImageIndex].GetAttributeValue("alt", "");
                     }
+                    break;
+                case Website.Ekonika:
+                    const char ekonikaSubtypeBrandSplitter = ' ';
+                    productTitleClass = "//div[@class='catalog-title-center-i']//h1";
+                    productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
+                    if (productTitle == null) return false;
+                    data = productTitle.InnerText.Replace("&nbsp;", " ").Split(ekonikaSubtypeBrandSplitter);
+                    subType = data.Count() - 1 >= typeIndex ? data[typeIndex] : string.Empty;
+                    brand = data.Count() - 1 >= brandIndex ? data[brandIndex] : string.Empty;
                     break;
             }
             return true;
@@ -189,6 +217,12 @@ namespace KendoUIApp.Models
                     correctValue = productPrice.InnerText.Split(bashmagPriceSplitter)[bashmagPriceIndex];
                     decimal.TryParse(correctValue, out price);
                     break;
+                case Website.Ekonika:
+                    productPriceClass = "//span[@class='price-current price-fix']/text()";
+                    productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
+                    if (productPrice == null) return false;
+                    decimal.TryParse(productPrice.InnerText, out price);
+                    break;
             }
             return true;
         }
@@ -214,6 +248,12 @@ namespace KendoUIApp.Models
                     if (productDiscountPrice == null) return false;
                     decimal.TryParse(productDiscountPrice.InnerText.Split(bashmagPriceSplitter)[bashmagPriceIndex],
                         out discount);
+                    break;
+                case Website.Ekonika:
+                    productDiscountClass = "//span[@class='price-discount']//b/text()";
+                    productDiscountPrice = rootDocument.DocumentNode.SelectSingleNode(productDiscountClass);
+                    if (productDiscountPrice == null) return false;
+                    decimal.TryParse(productDiscountPrice.InnerText, out discount);
                     break;
             }
             return true;
@@ -243,6 +283,17 @@ namespace KendoUIApp.Models
                     {
                         var availSize = node.ChildNodes[bashmagSizeNodeIndex].InnerText;
                         sizeList.Add(new Size {SizeText = availSize, IsAvailable = !node.InnerHtml.Contains("disabled")});
+                    });
+                    break;
+                case Website.Ekonika:
+                    availableSizesClass = "//select[@id='item-size-select']//option";
+                    availableSizes = rootDocument.DocumentNode.SelectNodes(availableSizesClass);
+                    availableSizes.ForEach(node =>
+                    {
+                        var availSize = node.GetAttributeValue("value", "");
+                        var availability = node.NextSibling.InnerHtml.Contains("пара") ||
+                                           node.NextSibling.InnerHtml.Contains("пары");
+                        sizeList.Add(new Size {SizeText = availSize, IsAvailable = availability});
                     });
                     break;
             }
@@ -312,6 +363,16 @@ namespace KendoUIApp.Models
                                 }
                             });
                         }
+                    });
+                    break;
+                case Website.Ekonika:
+                    propertyClass = "//div[@class='item-attr']//dl/dt";
+                    properties = rootDocument.DocumentNode.SelectNodes(propertyClass);
+                    properties.ForEach(node =>
+                    {
+                        var propertyKey = node.InnerText;
+                        var propertyValue = node.NextSibling.InnerText;
+                        newpropertiesList.Add(new KeyValuePair<string, string>(propertyKey, propertyValue));
                     });
                     break;
             }

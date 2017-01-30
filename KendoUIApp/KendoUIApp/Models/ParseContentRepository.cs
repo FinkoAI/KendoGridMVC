@@ -15,6 +15,9 @@ namespace KendoUIApp.Models
                 case Website.Bashmag:
                     item = ParseItemBashmag(url);
                     break;
+                case Website.Ekonika:
+                    item = ParseItemEkonika(url);
+                    break;
             }
             return item;
         }
@@ -29,6 +32,9 @@ namespace KendoUIApp.Models
                     break;
                 case Website.Bashmag:
                     itemList = ParsePageBashmag(url);
+                    break;
+                case Website.Ekonika:
+                    itemList = ParsePageEkonika(url);
                     break;
             }
             return itemList;
@@ -45,6 +51,9 @@ namespace KendoUIApp.Models
                 case Website.Bashmag:
                     itemList = ParseAllPagesBashmag(url);
                     break;
+                case Website.Ekonika:
+                    itemList = ParseAllPagesEkonika(url);
+                    break;
             }
             return itemList;
         }
@@ -53,6 +62,7 @@ namespace KendoUIApp.Models
     public enum Website
     {
         Sapato,
-        Bashmag
+        Bashmag,
+        Ekonika
     }
 }
