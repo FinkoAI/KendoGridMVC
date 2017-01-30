@@ -14,6 +14,8 @@ namespace KendoUIAppUnitTest
         private const string BashmagParseItemUrl =
             "https://www.bashmag.ru/men/36-obuv_/41-botinki/1751-Botinki-liga-detail";
 
+        private const string BashmagParseOnePageUrl = @"https://www.bashmag.ru/women/82-obuv_/86-baletki";
+
         [TestMethod]
         public void ParsingItem()
         {
@@ -45,6 +47,19 @@ namespace KendoUIAppUnitTest
         public void ParsingBashmagItem()
         {
             _parseContent.ParseItem(BashmagParseItemUrl, Website.Bashmag);
+        }
+
+        [TestMethod]
+        public void ParsingBashmagItemBrandNameFromImage()
+        {
+            const string url = @"https://www.bashmag.ru/men/36-obuv_/41-botinki/4373-Botinki-strobbs-detail";
+            _parseContent.ParseItem(url, Website.Bashmag);
+        }
+
+        [TestMethod]
+        public void BashmagParsingPage()
+        {
+            _parseContent.ParsePage(BashmagParseOnePageUrl, Website.Bashmag);
         }
     }
 }
