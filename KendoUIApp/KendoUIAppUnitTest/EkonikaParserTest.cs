@@ -9,12 +9,12 @@ namespace KendoUIAppUnitTest
         private const string ItemParseUrl = @"http://ekonika.ru/catalog/view/10093476";
         private const string PageParseUrl = @"http://ekonika.ru/catalog/shoes/vesna_leto_2017/";
 
-        private readonly ParseContentRepository _parseContent = new ParseContentRepository();
+        private readonly ParseContentRepository _parseContent = new ParseContentRepository(Website.Ekonika);
 
         [TestMethod]
         public void EkonikaItemParse()
         {
-            var itemObj = _parseContent.ParseItem(ItemParseUrl, Website.Ekonika);
+            var itemObj = _parseContent.ParseItem(ItemParseUrl);
             Assert.AreEqual(itemObj.Id, "10093476");
             Assert.AreEqual(itemObj.ImageUrls.Count, 6,"6 images are available");
             Assert.AreEqual(itemObj.Type, "");
@@ -31,13 +31,13 @@ namespace KendoUIAppUnitTest
         [TestMethod]
         public void ParsingPage()
         {
-            _parseContent.ParsePage(PageParseUrl, Website.Ekonika);
+            _parseContent.ParsePage(PageParseUrl);
         }
 
         [TestMethod]
         public void ParsingAllPage()
         {
-            _parseContent.ParseAllPages(PageParseUrl, Website.Ekonika);
+            _parseContent.ParseAllPages(PageParseUrl);
         }
     }
 }

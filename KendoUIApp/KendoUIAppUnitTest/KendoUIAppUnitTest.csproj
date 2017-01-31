@@ -35,6 +35,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
   </ItemGroup>
   <Choose>
@@ -52,15 +56,21 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ParsingTest.cs" />
+    <Compile Include="BashmagParserTest.cs" />
+    <Compile Include="SapatoParserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="EkonikaParserTest.cs" />
+    <Compile Include="ShopsFileTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\KendoUIApp\KendoUIApp.csproj">
       <Project>{42c6b34e-8cff-4728-b65d-bf1bc0988cac}</Project>
       <Name>KendoUIApp</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

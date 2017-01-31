@@ -2,61 +2,41 @@
 
 namespace KendoUIApp.Models
 {
-    public partial class ParseContentRepository : ParserBase
+    public class ParseContentRepository
     {
-        public Item ParseItem(string url, Website website)
+        private readonly IParseContent _repo;
+
+        public ParseContentRepository(Website website)
         {
-            var item = new Item();
             switch (website)
             {
                 case Website.Sapato:
-                    item = ParseItemSaptro(url);
+                    _repo = new SapatoParsingRepo();
                     break;
                 case Website.Bashmag:
-                    item = ParseItemBashmag(url);
+                    _repo = new BashmagParsingRepo();
                     break;
                 case Website.Ekonika:
-                    item = ParseItemEkonika(url);
+                    _repo = new EkonikaParsingRepo();
                     break;
             }
-            return item;
         }
 
-        public List<Item> ParsePage(string url, Website website)
+        public Item ParseItem(string url)
         {
-            var itemList = new List<Item>();
-            switch (website)
-            {
-                case Website.Sapato:
-                    itemList = ParsePageSaptro(url);
-                    break;
-                case Website.Bashmag:
-                    itemList = ParsePageBashmag(url);
-                    break;
-                case Website.Ekonika:
-                    itemList = ParsePageEkonika(url);
-                    break;
-            }
-            return itemList;
+            return _repo.ParseItem(url);
         }
 
-        public List<Item> ParseAllPages(string url, Website website)
+        public List<Item> ParsePage(string url)
         {
-            var itemList = new List<Item>();
-            switch (website)
-            {
-                case Website.Sapato:
-                    itemList = ParseAllPagesSaptro(url);
-                    break;
-                case Website.Bashmag:
-                    itemList = ParseAllPagesBashmag(url);
-                    break;
-                case Website.Ekonika:
-                    itemList = ParseAllPagesEkonika(url);
-                    break;
-            }
-            return itemList;
+            return _repo.ParsePage(url);
         }
+
+        public List<Item> ParseAllPages(string url)
+        {
+            return _repo.ParseAllPages(url);
+        }
+
     }
 
     public enum Website
