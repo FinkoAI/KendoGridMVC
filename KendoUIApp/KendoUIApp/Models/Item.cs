@@ -5,6 +5,7 @@ namespace KendoUIApp.Models
 {
     public class Item
     {
+        public string Url { get; set; }
         public string Id { get; set; }
         public List<string> ImageUrls { get; set; }
         public decimal Price { get; set; }
@@ -14,6 +15,7 @@ namespace KendoUIApp.Models
         public string Brand { get; set; }
         public List<Size> Sizes { get; set; }
         public List<KeyValuePair<string, string>> Properties { get; set; }
+        public Website WebsiteName { get; set; }
 
         private string SizeString
         {
@@ -35,7 +37,7 @@ namespace KendoUIApp.Models
             get
             {
                 var result = string.Empty;
-                Properties.ForEach(prop =>
+                Properties?.ForEach(prop =>
                 {
                     result = result +string.Format("{0}:{1}", prop.Key, prop.Value);
                 });
@@ -46,7 +48,7 @@ namespace KendoUIApp.Models
         public override string ToString()
         {
             const string seperator = ",";
-            return string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\"", Id,
+            return string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\"", WebsiteName, Url, Id,
                 ImageUrls != null ? String.Join(seperator, ImageUrls) : string.Empty,
                 Price, Discount, Type, SubType, Brand,
                 SizeString, PropertiesString

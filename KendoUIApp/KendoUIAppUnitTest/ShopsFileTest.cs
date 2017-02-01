@@ -70,7 +70,7 @@ namespace KendoUIAppUnitTest
         [TestMethod]
         public void JsonToCsv()
         {
-            const string readFile = "Ekonika.txt";
+            const string readFile = "Bashmag.txt";
             if (File.Exists(readFile))
             {
                 var jsonResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readFile));

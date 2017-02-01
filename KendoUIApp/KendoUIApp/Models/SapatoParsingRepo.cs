@@ -22,6 +22,8 @@ namespace KendoUIApp.Models
             };
             var rootDocument = website.Load(url);
             if (rootDocument == null) return item;
+            item.Url = url;
+            item.WebsiteName = Website.Sapato;
             string id;
             if (HasId(rootDocument, out id))
             {
