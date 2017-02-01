@@ -8,6 +8,7 @@ namespace KendoUIAppUnitTest
     {
         private const string ItemParseUrl = @"http://ekonika.ru/catalog/view/10093476";
         private const string PageParseUrl = @"http://ekonika.ru/catalog/shoes/vesna_leto_2017/";
+        private const string ParseAllPageUrl = @"http://ekonika.ru/catalog/shoes/";
 
         private readonly ParseContentRepository _parseContent = new ParseContentRepository(Website.Ekonika);
 
@@ -37,7 +38,7 @@ namespace KendoUIAppUnitTest
         [TestMethod]
         public void ParsingAllPage()
         {
-            _parseContent.ParseAllPages(PageParseUrl);
+            _parseContent.ParseAllPages(ParseAllPageUrl);
         }
     }
 }

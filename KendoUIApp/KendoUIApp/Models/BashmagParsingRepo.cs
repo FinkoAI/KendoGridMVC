@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using HtmlAgilityPack;
 using WebGrease.Css.Extensions;
 
@@ -11,7 +12,14 @@ namespace KendoUIApp.Models
         public Item ParseItem(string url)
         {
             var item = new Item();
-            var website = new HtmlWeb();
+            var website = new HtmlWeb
+            {
+                PreRequest = delegate (HttpWebRequest webRequest)
+                {
+                    webRequest.Timeout = 30000;
+                    return true;
+                }
+            };
             var rootDocument = website.Load(url);
             if (rootDocument == null) return item;
             string id;
@@ -91,29 +99,16 @@ namespace KendoUIApp.Models
             var website = new HtmlWeb();
             var rootDocument = website.Load(url);
             if (rootDocument == null) return itemList;
-
-            #region Get Categories
-
-            var categoriesUrl = new List<string>();
-            const string categoryLinkClass = "//div[@class='category-item ']//a";
-            var categories = rootDocument.DocumentNode.SelectNodes(categoryLinkClass);
-            categories.ForEach(item => { categoriesUrl.Add(item.GetAttributeValue("href", "")); });
-
-            #endregion
-
             var subcategoriesUrl = new List<string>();
-            categoriesUrl.ForEach(category =>
-            {
-                rootDocument = website.Load(string.Format("https://www.bashmag.ru{0}", category));
-                const string subcategoryLinkClass = "//div[@class='category-item ']//a";
-                var availableItem = rootDocument.DocumentNode.SelectNodes(subcategoryLinkClass);
-                availableItem.ForEach(item => { subcategoriesUrl.Add(item.GetAttributeValue("href", "")); });
-            });
+            rootDocument = website.Load(url);
+            const string subcategoryLinkClass = "//div[@class='category-item ']//a";
+            var availableItem = rootDocument.DocumentNode.SelectNodes(subcategoryLinkClass);
+            availableItem.ForEach(item => { subcategoriesUrl.Add(item.GetAttributeValue("href", "")); });
             subcategoriesUrl.ForEach(
                 subCate => { itemList.AddRange(ParsePage(string.Format("https://www.bashmag.ru{0}", subCate))); });
             return itemList;
         }
-        
+
         #region Private Methods
         private string BashmagHasMoreThenCurrentPageItems(HtmlDocument rootDocument)
         {
@@ -184,10 +179,13 @@ namespace KendoUIApp.Models
                 : string.Empty;
             productTitleClass = "//div[@class='product-manuf']";
             var productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
-            brand = productTitle.InnerText.Replace('\t', ' ').Replace('\n', ' ').Trim();
-            if (string.IsNullOrEmpty(brand))
+            if (productTitle != null)
             {
-                brand = productTitle.ChildNodes[brandImageIndex].GetAttributeValue("alt", "");
+                brand = productTitle.InnerText.Replace('\t', ' ').Replace('\n', ' ').Trim();
+                if (string.IsNullOrEmpty(brand))
+                {
+                    brand = productTitle.ChildNodes[brandImageIndex].GetAttributeValue("alt", "");
+                }
             }
 
             return true;

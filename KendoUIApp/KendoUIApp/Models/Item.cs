@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace KendoUIApp.Models
 {
@@ -13,5 +14,43 @@ namespace KendoUIApp.Models
         public string Brand { get; set; }
         public List<Size> Sizes { get; set; }
         public List<KeyValuePair<string, string>> Properties { get; set; }
+
+        private string SizeString
+        {
+            get
+            {
+                var result = string.Empty;
+                Sizes?.ForEach(sz =>
+                {
+                    result = result + (sz.IsAvailable
+                        ? string.Format("{0},", sz.SizeText)
+                        : string.Format("[{0}],", sz.SizeText));
+                });
+                return string.IsNullOrEmpty(result) ? result : result.TrimEnd(',');
+            }
+        }
+
+        private string PropertiesString
+        {
+            get
+            {
+                var result = string.Empty;
+                Properties.ForEach(prop =>
+                {
+                    result = result +string.Format("{0}:{1}", prop.Key, prop.Value);
+                });
+                return result;
+            }
+        }
+
+        public override string ToString()
+        {
+            const string seperator = ",";
+            return string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\"", Id,
+                ImageUrls != null ? String.Join(seperator, ImageUrls) : string.Empty,
+                Price, Discount, Type, SubType, Brand,
+                SizeString, PropertiesString
+                );
+        }
     }
 }

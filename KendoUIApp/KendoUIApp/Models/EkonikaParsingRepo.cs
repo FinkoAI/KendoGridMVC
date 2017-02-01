@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using HtmlAgilityPack;
 using WebGrease.Css.Extensions;
 
@@ -10,7 +11,14 @@ namespace KendoUIApp.Models
         public Item ParseItem(string url)
         {
             var item = new Item();
-            var website = new HtmlWeb();
+            var website = new HtmlWeb
+            {
+                PreRequest = delegate (HttpWebRequest webRequest)
+                {
+                    webRequest.Timeout = 30000;
+                    return true;
+                }
+            };
             var rootDocument = website.Load(url);
             if (rootDocument == null) return item;
             string id;
@@ -168,12 +176,15 @@ namespace KendoUIApp.Models
         private bool HasPrice(HtmlDocument rootDocument, out decimal price)
         {
             price = 0;
-
-            const string productPriceClass = "//span[@class='price-current price-fix']/text()";
+            string productPriceClass = "//span[@class='price-current price-fix']/text()";
             var productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
-            if (productPrice == null) return false;
-            decimal.TryParse(productPrice.InnerText, out price);
-
+            if (productPrice == null)
+            {
+                productPriceClass = "//span[@class='price-current']/text()";
+                productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
+                if (productPrice == null) return false;
+            }
+            decimal.TryParse(productPrice.InnerText.Replace("&nbsp;", ""), out price);
             return true;
         }
 

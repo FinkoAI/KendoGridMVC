@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text.RegularExpressions;
 using HtmlAgilityPack;
 using WebGrease.Css.Extensions;
@@ -11,7 +12,14 @@ namespace KendoUIApp.Models
         public Item ParseItem(string url)
         {
             var item = new Item();
-            var website = new HtmlWeb();
+            var website = new HtmlWeb
+            {
+                PreRequest = delegate(HttpWebRequest webRequest)
+                {
+                    webRequest.Timeout = 30000;
+                    return true;
+                }
+            };
             var rootDocument = website.Load(url);
             if (rootDocument == null) return item;
             string id;

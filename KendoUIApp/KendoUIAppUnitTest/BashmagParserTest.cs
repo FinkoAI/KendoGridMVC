@@ -9,7 +9,7 @@ namespace KendoUIAppUnitTest
         private const string BashmagParseItemUrl = @"https://www.bashmag.ru/men/36-obuv_/41-botinki/3565-Botinki-magelan-detail";
         private const string BashmagParseItemUrlWithBrandImage = @"https://www.bashmag.ru/men/36-obuv_/41-botinki/4373-Botinki-strobbs-detail";
         private const string BashmagParseOnePageUrl = @"https://www.bashmag.ru/women/82-obuv_/86-baletki";
-        private const string ParseAllPageUrl = @"https://www.bashmag.ru/women";
+        private const string ParseAllPageUrl = @"https://www.bashmag.ru/women/82-obuv_";
 
         private readonly ParseContentRepository _parseContent = new ParseContentRepository(Website.Bashmag);
 
