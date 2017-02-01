@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using ClosedXML.Excel;
 using KendoUIApp.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
+using  System.Data;
 
 namespace KendoUIAppUnitTest
 {
@@ -78,6 +80,59 @@ namespace KendoUIAppUnitTest
 
                 if (File.Exists("item.csv")) File.Delete("item.csv");
                 File.WriteAllText("item.csv", csv);
+            }
+        }
+
+        [TestMethod]
+        public void JsonToExcel()
+        {
+            #region Constants
+            const string seperator = ",";
+            const string readFile = "Bashmag.txt";
+            const int idIndex = 3;
+            const int imageUrlsIndex = 4;
+            const int priceIndex = 5;
+            const int discountIndex = 6;
+            const int typeIndex = 7;
+            const int subTypeIndex = 8;
+            const int brandIndex = 9;
+            const int sizeIndex = 10;
+            const int propertiesIndex = 11;
+            #endregion
+
+            if (File.Exists(readFile))
+            {
+                var jsonResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readFile));
+                var workbook = new XLWorkbook();
+                var worksheet = workbook.Worksheets.Add("Bashmag");
+                var row = 1;
+                #region Header Row
+                worksheet.Cell(row, idIndex).Value = "Id";
+                worksheet.Cell(row, imageUrlsIndex).Value = "ImageUrls";
+                worksheet.Cell(row, priceIndex).Value = "Price";
+                worksheet.Cell(row, discountIndex).Value = "Discount";
+                worksheet.Cell(row, typeIndex).Value = "Type";
+                worksheet.Cell(row, subTypeIndex).Value = "SubType";
+                worksheet.Cell(row, brandIndex).Value = "Brand";
+                worksheet.Cell(row, sizeIndex).Value = "Sizes";
+                worksheet.Cell(row, propertiesIndex).Value = "Properties";
+                row++;
+                #endregion
+                jsonResponse.ForEach(item =>
+                {
+                    worksheet.Cell(row, idIndex).Value = item.Id;
+                    worksheet.Cell(row, imageUrlsIndex).Value = item.ImageUrls != null ? String.Join(seperator, item.ImageUrls) : string.Empty;
+                    worksheet.Cell(row, priceIndex).Value = item.Price;
+                    worksheet.Cell(row, discountIndex).Value = item.Discount;
+                    worksheet.Cell(row, typeIndex).Value = item.Type;
+                    worksheet.Cell(row, subTypeIndex).Value = item.SubType;
+                    worksheet.Cell(row, brandIndex).Value = item.Brand;
+                    worksheet.Cell(row, sizeIndex).Value = item.SizeString;
+                    worksheet.Cell(row, propertiesIndex).Value = item.PropertiesString;
+                    row++;
+                });
+                if (File.Exists("Bashmag.xlsx")) File.Delete("Bashmag.xlsx");
+                workbook.SaveAs("Bashmag.xlsx");
             }
         }
     }

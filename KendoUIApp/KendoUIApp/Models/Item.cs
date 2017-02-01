@@ -17,7 +17,7 @@ namespace KendoUIApp.Models
         public List<KeyValuePair<string, string>> Properties { get; set; }
         public Website WebsiteName { get; set; }
 
-        private string SizeString
+        public string SizeString
         {
             get
             {
@@ -32,7 +32,7 @@ namespace KendoUIApp.Models
             }
         }
 
-        private string PropertiesString
+        public string PropertiesString
         {
             get
             {
@@ -48,7 +48,8 @@ namespace KendoUIApp.Models
         public override string ToString()
         {
             const string seperator = ",";
-            return string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\"", WebsiteName, Url, Id,
+            return string.Format("\"{0}\",\"{1}\",\"{2}\",\"{3}\",\"{4}\",\"{5}\",\"{6}\",\"{7}\",\"{8}\",\"{9}\",\"{10}\"", 
+                WebsiteName.ToString("G"), Url, Id,
                 ImageUrls != null ? String.Join(seperator, ImageUrls) : string.Empty,
                 Price, Discount, Type, SubType, Brand,
                 SizeString, PropertiesString
