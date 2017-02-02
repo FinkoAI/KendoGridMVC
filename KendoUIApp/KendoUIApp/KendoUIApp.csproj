@@ -121,6 +121,7 @@
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
     <Compile Include="Models\BashmagParsingRepo.cs" />
+    <Compile Include="Models\LamodaParsingRepo.cs" />
     <Compile Include="Models\EkonikaParsingRepo.cs" />
     <Compile Include="Models\IParseContent.cs" />
     <Compile Include="Models\Item.cs" />

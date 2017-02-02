@@ -6,7 +6,6 @@ using ClosedXML.Excel;
 using KendoUIApp.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
-using  System.Data;
 
 namespace KendoUIAppUnitTest
 {
@@ -88,23 +87,34 @@ namespace KendoUIAppUnitTest
         {
             #region Constants
             const string seperator = ",";
-            const string readFile = "Bashmag.txt";
-            const int idIndex = 3;
-            const int imageUrlsIndex = 4;
-            const int priceIndex = 5;
-            const int discountIndex = 6;
-            const int typeIndex = 7;
-            const int subTypeIndex = 8;
-            const int brandIndex = 9;
-            const int sizeIndex = 10;
-            const int propertiesIndex = 11;
+            const string readSapatoFile = "Sapato.txt";
+            const string readBashmagFile = "Bashmag.txt";
+            const string readEkonikaFile = "Ekonika.txt";
+            const int idIndex = 1;
+            const int imageUrlsIndex = 2;
+            const int priceIndex = 3;
+            const int discountIndex = 4;
+            const int typeIndex = 5;
+            const int subTypeIndex = 6;
+            const int brandIndex = 7;
+            const int sizeIndex = 8;
+            const int propertiesIndex = 9;
             #endregion
 
-            if (File.Exists(readFile))
+            if (File.Exists(readSapatoFile) && File.Exists(readBashmagFile) && File.Exists(readEkonikaFile))
             {
-                var jsonResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readFile));
+                var finalList = new List<Item>();
+
+                var jsonSapatoResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readSapatoFile));
+                var jsonBashmagResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readBashmagFile));
+                var jsonEkonikaResponse = JsonConvert.DeserializeObject<List<Item>>(File.ReadAllText(readEkonikaFile));
+
+                finalList.AddRange(jsonSapatoResponse);
+                finalList.AddRange(jsonBashmagResponse);
+                finalList.AddRange(jsonEkonikaResponse);
+
                 var workbook = new XLWorkbook();
-                var worksheet = workbook.Worksheets.Add("Bashmag");
+                var worksheet = workbook.Worksheets.Add("ShopItems");
                 var row = 1;
                 #region Header Row
                 worksheet.Cell(row, idIndex).Value = "Id";
@@ -118,7 +128,7 @@ namespace KendoUIAppUnitTest
                 worksheet.Cell(row, propertiesIndex).Value = "Properties";
                 row++;
                 #endregion
-                jsonResponse.ForEach(item =>
+                finalList.ForEach(item =>
                 {
                     worksheet.Cell(row, idIndex).Value = item.Id;
                     worksheet.Cell(row, imageUrlsIndex).Value = item.ImageUrls != null ? String.Join(seperator, item.ImageUrls) : string.Empty;
@@ -131,8 +141,8 @@ namespace KendoUIAppUnitTest
                     worksheet.Cell(row, propertiesIndex).Value = item.PropertiesString;
                     row++;
                 });
-                if (File.Exists("Bashmag.xlsx")) File.Delete("Bashmag.xlsx");
-                workbook.SaveAs("Bashmag.xlsx");
+                if (File.Exists("Shop.xlsx")) File.Delete("Shop.xlsx");
+                workbook.SaveAs("Shop.xlsx");
             }
         }
     }

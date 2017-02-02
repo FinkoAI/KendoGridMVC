@@ -19,6 +19,9 @@ namespace KendoUIApp.Models
                 case Website.Ekonika:
                     _repo = new EkonikaParsingRepo();
                     break;
+                case Website.Lamoda:
+                    _repo = new LamodaParsingRepo();
+                    break;
             }
         }
 
@@ -43,6 +46,7 @@ namespace KendoUIApp.Models
     {
         Sapato,
         Bashmag,
-        Ekonika
+        Ekonika,
+        Lamoda
     }
 }
