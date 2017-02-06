@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using HtmlAgilityPack;
@@ -6,14 +8,14 @@ using WebGrease.Css.Extensions;
 
 namespace KendoUIApp.Models
 {
-    public class LamodaParsingRepo : IParseContent
+    public class SpvtomskeParsingRepo : IParseContent
     {
         public Item ParseItem(string url)
         {
             var item = new Item();
             var website = new HtmlWeb
             {
-                PreRequest = delegate(HttpWebRequest webRequest)
+                PreRequest = delegate (HttpWebRequest webRequest)
                 {
                     webRequest.Timeout = 30000;
                     return true;
@@ -36,7 +38,7 @@ namespace KendoUIApp.Models
 
             if (rootDocument == null) return item;
             item.Url = url;
-            item.WebsiteName = Website.Lamoda;
+            item.WebsiteName = Website.Spvtomske;
             string id;
             if (HasId(rootDocument, out id))
             {
@@ -108,7 +110,7 @@ namespace KendoUIApp.Models
             if (HasItems(rootDocument, out itemDescriptionUrlList))
             {
                 itemDescriptionUrlList.AsParallel().ForEach(
-                    item => { itemList.Add(ParseItem(string.Format("http://www.lamoda.ru{0}", item))); });
+                    item => { itemList.Add(ParseItem(string.Format("http://spvtomske.ru/sp/newCatalog/index/id/{0}", item))); });
             }
             return itemList;
         }
@@ -116,41 +118,48 @@ namespace KendoUIApp.Models
         public List<Item> ParseAllPages(string url)
         {
             var itemList = new List<Item>();
-            var website = new HtmlWeb();
-            var rootDocument = website.Load(url);
-            if (rootDocument == null) return itemList;
             List<string> itemDescriptionUrlList;
-            if (GetLamodaAllPageUrl(rootDocument, url, out itemDescriptionUrlList))
+            int pageNum = 1;
+            while (IsValidPage(url, pageNum, out itemDescriptionUrlList))
             {
-                itemDescriptionUrlList.AsParallel().ForEach(
+                itemDescriptionUrlList.ForEach(
                     item => { itemList.AddRange(ParsePage(item)); });
+                pageNum++;
+                Debug.WriteLine(pageNum);
             }
             return itemList;
         }
 
         #region Private Methods
 
-        private bool GetLamodaAllPageUrl(HtmlDocument rootDocument, string url, out List<string> urlList)
+        private bool IsValidPage(string url,int pageNum, out List<string> urlList)
         {
             var newUrlList = new List<string>();
-            var totalItemPages = 0;
-            const string nextPageLinkClass = @"//div[@class='paginator']";
-            var nextPage = rootDocument.DocumentNode.SelectSingleNode(nextPageLinkClass);
-            if (nextPage != null)
-                int.TryParse(nextPage.GetAttributeValue("data-pages", ""), out totalItemPages);
-
-            Enumerable.Range(1, totalItemPages).ForEach(x => { newUrlList.Add(string.Format("{0}&page={1}", url, x)); });
-
+            var website = new HtmlWeb();
+            var loadUrl = string.Format("{0}?page={1}", url, pageNum);
+            var rootDocument = website.Load(loadUrl);
             urlList = newUrlList;
+            if (rootDocument == null) return false;
+            const string nextPageLinkClass = "//table[@id='datatable']/tbody/tr";
+            var nextPage = rootDocument.DocumentNode.SelectNodes(nextPageLinkClass);
+            if (nextPage != null &&  nextPage.Count > 0)
+            {
+                newUrlList.Add(loadUrl);
+                urlList = newUrlList;
+            }
             return urlList.Count > 0;
         }
 
         private bool HasItems(HtmlDocument rootDocument, out List<string> urlList)
         {
             var newUrlList = new List<string>();
-            const string availableItemClass = "//a[@class='products-list-item__link link']";
+            const string availableItemClass = "//table[@id='datatable']/tbody/tr/td/div";
             var availableItem = rootDocument.DocumentNode.SelectNodes(availableItemClass);
-            availableItem.ForEach(item => { newUrlList.Add(item.GetAttributeValue("href", "")); });
+            availableItem.ForEach(item =>
+            {
+                if(!string.IsNullOrEmpty(item.GetAttributeValue("tovarid", "")))
+                newUrlList.Add(item.GetAttributeValue("tovarid", ""));
+            });
             urlList = newUrlList;
             return urlList.Count > 0;
         }
@@ -158,19 +167,17 @@ namespace KendoUIApp.Models
         private bool HasId(HtmlDocument rootDocument, out string id)
         {
             id = string.Empty;
-            const char splitIdChar = ' ';
-            const string productIdClass = "//div[@class='breadcrumbs__sku']/text()";
+            const string productIdClass = "//input[@name='tovarId']";
             var productId = rootDocument.DocumentNode.SelectSingleNode(productIdClass);
             if (productId == null) return false;
-            var data = productId.InnerText.Split(splitIdChar);
-            id = data[data.Length - 1];
+            id = productId.GetAttributeValue("value", "");
             return true;
         }
 
         private bool HasTitle(HtmlDocument rootDocument, out string title)
         {
             title = string.Empty;
-            const string productTitleClass = "//h1[@itemprop='name']/text()";
+            const string productTitleClass = "//h2[@itemprop='name']/text()";
             var productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
             if (productTitle == null) return false;
             title = productTitle.InnerText;
@@ -180,33 +187,43 @@ namespace KendoUIApp.Models
         private bool HasProductGallery(HtmlDocument rootDocument, out List<string> imageUrls)
         {
             imageUrls = new List<string>();
-            const string productGalleryClass = "//img[@class='showcase__slide-image']";
-            var imageGallery = rootDocument.DocumentNode.SelectNodes(productGalleryClass);
-            if (imageGallery == null || imageGallery.Count == 0) return false;
-            imageUrls.AddRange(imageGallery.Select(node => node.GetAttributeValue("src", "")));
+            string productGalleryClass = "//a[@id='luu_a']";
+            var imageGallery = rootDocument.DocumentNode.SelectSingleNode(productGalleryClass);
+            if (imageGallery == null) return false;
+            var className = imageGallery.GetAttributeValue("class", "");
+            productGalleryClass = "//a[@class='" + className + "']";
+            var images = rootDocument.DocumentNode.SelectNodes(productGalleryClass);
+            if (images == null || images.Count == 0) return false;
+            imageUrls.AddRange(images.Select(node => node.GetAttributeValue("href", "")));
             return true;
         }
 
         private bool HasTitle(HtmlDocument rootDocument, out string type, out string brand,
             out string subType)
         {
-            const int typeIndex = 3;
-            const int subtypeIndex = 4;
             type = string.Empty;
             brand = string.Empty;
-            subType = string.Empty;
-            var productTitleClass = "//span[@itemprop='title']";
-            var productTitle = rootDocument.DocumentNode.SelectNodes(productTitleClass);
+            const int subTypeIndex = 1;
+            var calcSubType = string.Empty;
+            var productTitleClass = "//meta[@name='description']";
+            var productTitle = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
             if (productTitle != null)
             {
-                type = productTitle.Count() - 1 >= typeIndex ? productTitle[typeIndex].InnerText : string.Empty;
-                subType = productTitle.Count() - 1 >= subtypeIndex ? productTitle[subtypeIndex].InnerText : string.Empty;
+                var metaContent = productTitle.GetAttributeValue("content", "");
+                metaContent.Split(';').ForEach(x =>
+                {
+                    if (x.Contains("Тип товара"))
+                    {
+                        calcSubType = x.Split(':')[subTypeIndex];
+                    }
+                });
             }
-            productTitleClass = "//div[@class='ii-product__brand']";
+            subType = calcSubType;
+            productTitleClass = "//div[@itemprop='brand']/text()";
             var productBrand = rootDocument.DocumentNode.SelectSingleNode(productTitleClass);
             if (productBrand != null)
             {
-                brand = productBrand.GetAttributeValue("data-name", "");
+                brand = productBrand.InnerText;
             }
             return true;
         }
@@ -214,10 +231,11 @@ namespace KendoUIApp.Models
         private bool HasPrice(HtmlDocument rootDocument, out decimal price)
         {
             price = 0;
-            const string productPriceClass = "//meta[@itemprop='price']";
+            const int priceIndex=0;
+            const string productPriceClass = "//h3[@itemprop='price']/text()";
             var productPrice = rootDocument.DocumentNode.SelectSingleNode(productPriceClass);
             if (productPrice == null) return false;
-            var data = productPrice.GetAttributeValue("content", "");
+            var data = productPrice.InnerText.Split(' ')[priceIndex];
             decimal.TryParse(data, out price);
             return true;
         }
@@ -225,28 +243,29 @@ namespace KendoUIApp.Models
         private bool HasDiscount(HtmlDocument rootDocument, out decimal discount)
         {
             discount = 0;
-            const string productDiscountClass = "//span[@class='product__badge_m  product__badge_sale']";
-            var productDiscountPrice = rootDocument.DocumentNode.SelectSingleNode(productDiscountClass);
-            if (productDiscountPrice == null) return false;
-            decimal.TryParse(productDiscountPrice.InnerText, out discount);
-            return true;
+            return false;
         }
 
         private bool HasSizes(HtmlDocument rootDocument, out List<Size> sizes)
         {
             var sizeList = new List<Size>();
-            const char splitIdChar = ' ';
-            const string availableSizesClass = "//div[@class='ii-select__column ii-select__column_native']/div";
-            var availableSizes = rootDocument.DocumentNode.SelectNodes(availableSizesClass);
-            availableSizes.ForEach(node =>
+            const int sizesIndex = 1;
+            const string availableSizesClass = "//meta[@name='description']";
+            var availableSizes = rootDocument.DocumentNode.SelectSingleNode(availableSizesClass);
+            if (availableSizes != null)
             {
-                if (node.GetAttributeValue("class", "").Contains("ii-select__option"))
+                var metaContent = availableSizes.GetAttributeValue("content", "");
+                metaContent.Split(';').ForEach(x =>
                 {
-                    var availSize = node.InnerText.Split(splitIdChar).First();
-                    var availability = !node.OuterHtml.Contains("disabled");
-                    sizeList.Add(new Size {SizeText = availSize, IsAvailable = availability});
-                }
-            });
+                    if (x.Contains("Размер"))
+                    {
+                        x.Split(':')[sizesIndex].Split(',').ForEach(y =>
+                        {
+                            sizeList.Add(new Size {SizeText = y, IsAvailable = true});
+                        });
+                    }
+                });
+            }
             sizes = sizeList.OrderBy(x => x.SizeText).ToList();
             return sizes.Count > 0;
         }
@@ -255,14 +274,33 @@ namespace KendoUIApp.Models
             out List<KeyValuePair<string, string>> propertiesList)
         {
             var newpropertiesList = new List<KeyValuePair<string, string>>();
-            const int keyIndex = 1;
-            const int valueIndex = 3;
-            const string propertyClass = "//div[@class='ii-product__attribute']";
+            const string propertyClass = "//div[@class='formd_i']";
             var properties = rootDocument.DocumentNode.SelectNodes(propertyClass);
             properties.ForEach(node =>
             {
-                var propertyKey = node.ChildNodes[keyIndex].InnerText;
-                var propertyValue = node.ChildNodes[valueIndex].InnerText;
+                var propertyKey = string.Empty;
+                var propertyValue = string.Empty;
+                node.ChildNodes.ForEach(child =>
+                {
+                    if (child.GetAttributeValue("class", "").Equals("formd_t"))
+                    {
+                        propertyKey = child.InnerText;
+                    }
+                    if (child.GetAttributeValue("class", "").Equals("formd_param"))
+                    {
+                        propertyValue = child.InnerText;
+                    }
+                    if (child.GetAttributeValue("class", "").Equals("formd_param radio"))
+                    {
+                        var data =new List<string>();
+                        child.ChildNodes.ForEach(radio =>
+                        {
+                            if(radio.Name.Equals("p"))
+                            data.Add(radio.InnerText.Replace("\r\n","").Trim());
+                        });
+                        propertyValue = String.Join(",", data);
+                    }
+                });
                 newpropertiesList.Add(new KeyValuePair<string, string>(propertyKey, propertyValue));
             });
 

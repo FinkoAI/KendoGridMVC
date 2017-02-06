@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using WebGrease.Css.Extensions;
 
 namespace KendoUIApp.Models
 {
@@ -23,7 +25,7 @@ namespace KendoUIApp.Models
             get
             {
                 var result = string.Empty;
-                Sizes?.ForEach(sz =>
+                Sizes?.AsParallel().ForEach(sz =>
                 {
                     result = result + (sz.IsAvailable
                         ? string.Format("{0},", sz.SizeText)
@@ -38,9 +40,9 @@ namespace KendoUIApp.Models
             get
             {
                 var result = string.Empty;
-                Properties?.ForEach(prop =>
+                Properties?.AsParallel().ForEach(prop =>
                 {
-                    result = result +string.Format("{0}:{1},", prop.Key, prop.Value);
+                    result = result + string.Format("{0}:{1},", prop.Key, prop.Value);
                 });
                 return string.IsNullOrEmpty(result) ? result : result.TrimEnd(',');
             }

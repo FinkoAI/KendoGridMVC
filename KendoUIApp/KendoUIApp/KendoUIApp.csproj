@@ -45,8 +45,8 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="HtmlAgilityPack, Version=1.4.9.5, Culture=neutral, PublicKeyToken=bd319b19eaf3b43a, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\HtmlAgilityPack.1.4.9.5\lib\Net45\HtmlAgilityPack.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="Kendo.Mvc">
       <HintPath>..\packages\aspnetmvc\Binaries\Mvc5\Kendo.Mvc.dll</HintPath>
@@ -131,6 +131,7 @@
     <Compile Include="Models\ProductModelRepository.cs" />
     <Compile Include="Models\SapatoParsingRepo.cs" />
     <Compile Include="Models\Size.cs" />
+    <Compile Include="Models\SpvtomskeParsingRepo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

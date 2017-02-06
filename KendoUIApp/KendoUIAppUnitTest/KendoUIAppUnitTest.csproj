@@ -49,6 +49,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -66,6 +67,7 @@
   </Choose>
   <ItemGroup>
     <Compile Include="BashmagParserTest.cs" />
+    <Compile Include="SpvtomskeParserTest.cs" />
     <Compile Include="LamodaParserTest.cs" />
     <Compile Include="SapatoParserTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

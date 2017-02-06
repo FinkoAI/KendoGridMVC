@@ -22,6 +22,9 @@ namespace KendoUIApp.Models
                 case Website.Lamoda:
                     _repo = new LamodaParsingRepo();
                     break;
+                case Website.Spvtomske:
+                    _repo = new SpvtomskeParsingRepo();
+                    break;
             }
         }
 
@@ -47,6 +50,7 @@ namespace KendoUIApp.Models
         Sapato,
         Bashmag,
         Ekonika,
-        Lamoda
+        Lamoda,
+        Spvtomske
     }
 }
