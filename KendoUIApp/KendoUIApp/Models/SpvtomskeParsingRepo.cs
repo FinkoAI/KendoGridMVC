@@ -261,7 +261,8 @@ namespace KendoUIApp.Models
                     {
                         x.Split(':')[sizesIndex].Split(',').ForEach(y =>
                         {
-                            sizeList.Add(new Size {SizeText = y, IsAvailable = true});
+                            if (!string.IsNullOrEmpty(y))
+                                sizeList.Add(new Size {SizeText = y, IsAvailable = true});
                         });
                     }
                 });
@@ -284,7 +285,7 @@ namespace KendoUIApp.Models
                 {
                     if (child.GetAttributeValue("class", "").Equals("formd_t"))
                     {
-                        propertyKey = child.InnerText;
+                        propertyKey = child.InnerText.TrimEnd(':');
                     }
                     if (child.GetAttributeValue("class", "").Equals("formd_param"))
                     {

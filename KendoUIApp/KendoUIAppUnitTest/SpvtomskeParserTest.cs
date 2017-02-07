@@ -45,6 +45,24 @@ namespace KendoUIAppUnitTest
         {
             _parseContent.ParseAllPages(ParseAllPageUrl);
         }
+
+        [TestMethod]
+        public void SpvtomskeItem2Parse()
+        {
+            const string url = "http://spvtomske.ru/sp/newCatalog/index/id/39531373";
+            var itemObj = _parseContent.ParseItem(url);
+            Assert.AreEqual(itemObj.Id, "39531373");
+            Assert.AreEqual(itemObj.Title, "Бсоножки жен. (иск. кожа)");
+            Assert.AreEqual(itemObj.ImageUrls.Count, 13, "13 images are available");
+            Assert.AreEqual(itemObj.Type, "");
+            Assert.AreEqual(itemObj.SubType, " Босоножки, сандалии, сабо");
+            Assert.AreEqual(itemObj.Brand, "ТУФЛИ МОЕЙ МЕЧТЫ");
+            Assert.AreEqual(itemObj.Price, 1067);
+            Assert.AreEqual(itemObj.Discount, 0m);
+            Assert.AreEqual(itemObj.Sizes.Count, 1);
+            Assert.IsTrue(itemObj.Sizes.FindAll(x => x.SizeText.Contains("39")).Count > 0, "39 number size available");
+            Assert.AreEqual(itemObj.Properties.Count, 6, "6 properties are available");
+        }
     }
 }
 
